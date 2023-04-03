@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "apis1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/WaiikiApiManagementService/apis/WaiikiApi",
+      "type": "apis.azure"
+    },
+    "secrets2": {
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/WaiikiVault",
+      "type": "secrets.keyVault",
+      "connectionId": "VaultUri",
+      "dynamicId": null
+    },
+    "mssql1": {
+      "ignored": "True",
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:hey_idiot",
+      "dynamicId": null
+    },
+    "mssql3": {
+      "secretStore": "AzureKeyVault",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/waiikiapidbserver/databases/pixel_vocab",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:pixel_vocab"
+    }
+  }
+}
