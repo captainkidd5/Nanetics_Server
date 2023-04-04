@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
 using System.Runtime.InteropServices;
 
-namespace SilverMenu.Controllers.Authentication.Identity
+namespace Api.Controllers.Authentication.Identity
 {
     [Authorize(Roles = "Admin")]
     [ApiController]

@@ -2,17 +2,17 @@
 using Contracts.Authentication.Identity.Create;
 using Models.Authentication;
 using Microsoft.AspNetCore.Identity;
-using SilverMenu.DependencyInjections.Authentication;
+using Api.DependencyInjections.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using DatabaseServices;
-using SilverMenu.DependencyInjections.Email;
+using Api.DependencyInjections.Email;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 using System.Collections.Generic;
 
-namespace SilverMenu.Controllers.Authentication.Identity
+namespace Api.Controllers.Authentication.Identity
 {
     [Authorize(Roles = "Admin")]
     [ApiController]

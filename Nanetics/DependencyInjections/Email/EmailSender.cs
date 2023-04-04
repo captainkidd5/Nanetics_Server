@@ -6,7 +6,7 @@ using SendGrid;
 using SendGrid.Helpers.Mail;
 using SendGrid.Helpers.Mail.Model;
 
-namespace SilverMenu.DependencyInjections.Email
+namespace Api.DependencyInjections.Email
 {
     public class EmailSender : IEmailSender
     {
@@ -47,7 +47,7 @@ namespace SilverMenu.DependencyInjections.Email
             var msg = new SendGridMessage()
             {
                 From = new EmailAddress("waiikipomm@gmail.com", "Waiiki"),
-                Subject = "SilverMenu - Email Confirmation",
+                Subject = "Api - Email Confirmation",
                 HtmlContent = $"Here is your confirmation code: {code}.\n" +
                         $"This code will expire in 12 hours."
             };
@@ -64,7 +64,7 @@ namespace SilverMenu.DependencyInjections.Email
             var msg = new SendGridMessage()
             {
                 From = new EmailAddress("waiikipomm@gmail.com", "Waiiki"),
-                Subject = "SilverMenu - Reset Password",
+                Subject = "Api - Reset Password",
                 HtmlContent = $"<p>Here is your password reset link:</p> <a href='http://localhost:3000/reset-password?email={emailTo}&token={HttpUtility.UrlEncode(passwordResetToken)}'>Reset Password</a>.\n" +
                         $"<p>This code will expire in 12 hours.</p><strong> If you did not request a password change, you should ignore this email.</strong>"
             };

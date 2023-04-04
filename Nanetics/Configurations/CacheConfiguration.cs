@@ -2,7 +2,7 @@
 using Core;
 using Marvin.Cache.Headers;
 
-namespace SilverMenu.Configurations
+namespace Api.Configurations
 {
     internal class CacheConfiguration : ConfigurationBase
     {

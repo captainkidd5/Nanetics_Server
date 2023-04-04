@@ -9,15 +9,15 @@ using Microsoft.Extensions.Primitives;
 using Models.Authentication;
 using Services;
 using System.Security.Claims;
-using SilverMenu.DependencyInjections.Authentication;
+using Api.DependencyInjections.Authentication;
 using DatabaseServices;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
-using SilverMenu.DependencyInjections.Email;
+using Api.DependencyInjections.Email;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Web;
 
-namespace SilverMenu.Controllers.Authentication.Identity
+namespace Api.Controllers.Authentication.Identity
 {
     [ApiController]
     [Route("[controller]")]

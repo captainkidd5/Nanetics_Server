@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "SilverMenu": {
+    "Api": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",

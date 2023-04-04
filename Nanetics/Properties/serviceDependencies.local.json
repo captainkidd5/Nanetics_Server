@@ -16,7 +16,7 @@
     "mssql1": {
       "ignored": "true",
       "type": "mssql",
-      "connectionId": "ConnectionStrings:SilverMenu_db"
+      "connectionId": "ConnectionStrings:Api_db"
     }
   }
 }

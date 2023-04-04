@@ -1,5 +1,5 @@
 ﻿using DatabaseServices;
-using SilverMenu.DependencyInjections.Authentication;
+using Api.DependencyInjections.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Models.Authentication;
 using Models.Devices;
 
-namespace SilverMenu.Controllers.Devices
+namespace Api.Controllers.Devices
 {
     [ApiController]
     [Route("[controller]")]

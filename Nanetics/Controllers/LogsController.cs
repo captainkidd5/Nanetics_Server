@@ -10,7 +10,7 @@ using Models.Authentication;
 using Models.Logging;
 using Services;
 
-namespace SilverMenu.Controllers
+namespace Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]

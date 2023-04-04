@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
 using Models.BusinessStuff;
 using Models.Devices;
-using SilverMenu.DependencyInjections.Authentication;
+using Api.DependencyInjections.Authentication;
 
-namespace SilverMenu.Controllers.Businesses
+namespace Api.Controllers.Businesses
 {
     [ApiController]
     [Authorize(Roles = "Admin")]

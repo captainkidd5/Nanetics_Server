@@ -9,9 +9,9 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Contracts.Media;
 using Microsoft.Identity.Client;
-using SilverMenu.DependencyInjections.Azure;
+using Api.DependencyInjections.Azure;
 
-namespace SilverMenu.DependencyInjections.S3
+namespace Api.DependencyInjections.S3
 {
     //https://docs.aws.amazon.com/sdkfornet/v3/apidocs/items/S3/MIS3GetPreSignedURLGetPreSignedUrlRequest.html
     /// <summary>

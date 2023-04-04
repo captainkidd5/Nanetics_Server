@@ -2,7 +2,7 @@
 using Core;
 using WaiikiCore;
 
-namespace SilverMenu.Configurations
+namespace Api.Configurations
 {
     internal class RateConfiguration : ConfigurationBase
     {

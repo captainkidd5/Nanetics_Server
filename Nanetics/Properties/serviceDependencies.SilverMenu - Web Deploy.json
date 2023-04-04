@@ -9,9 +9,9 @@
     },
     "mssql2": {
       "secretStore": "AzureKeyVault",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/waiikiapidbserver/databases/SilverMenu_db",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/waiikiapidbserver/databases/Api_db",
       "type": "mssql.azure",
-      "connectionId": "ConnectionStrings:SilverMenu_db",
+      "connectionId": "ConnectionStrings:Api_db",
       "dynamicId": null
     }
   }

@@ -1,6 +1,6 @@
 ﻿using SendGrid;
 
-namespace SilverMenu.DependencyInjections.Email
+namespace Api.DependencyInjections.Email
 {
     public interface IEmailSender
     {

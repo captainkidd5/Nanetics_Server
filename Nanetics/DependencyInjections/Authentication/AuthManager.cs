@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace SilverMenu.DependencyInjections.Authentication
+namespace Api.DependencyInjections.Authentication
 {
     public class AuthManager : IAuthManager
     {
@@ -28,10 +28,10 @@ namespace SilverMenu.DependencyInjections.Authentication
             SigningCredentials signingCredentials = GetSigningCredentials();
 
             //minutes
-            int expires = 1;
+          //  int expires = 1;
 
-            if (isRefreshToken)
-                expires = 120;
+          //  if (isRefreshToken)
+               int expires = 120;
 
             SecurityTokenDescriptor tokenDescription = await GenerateToken(user, signingCredentials, expires);
 

@@ -1,7 +1,7 @@
 ﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 
-namespace SilverMenu.DependencyInjections.Azure
+namespace Api.DependencyInjections.Azure
 {
     public class KeyVaultRetriever : IKeyVaultRetriever
     {

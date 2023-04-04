@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 
-namespace SilverMenu.Controllers
+namespace Api.Controllers
 {
     public class PushApiClient
     {

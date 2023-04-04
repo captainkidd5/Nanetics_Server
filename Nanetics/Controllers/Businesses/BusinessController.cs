@@ -13,10 +13,10 @@ using Models.Authentication;
 using Models.BusinessStuff;
 using Models.Devices;
 using Newtonsoft.Json.Linq;
-using SilverMenu.DependencyInjections.Authentication;
-using SilverMenu.DependencyInjections.S3;
+using Api.DependencyInjections.Authentication;
+using Api.DependencyInjections.S3;
 
-namespace SilverMenu.Controllers.Businesses
+namespace Api.Controllers.Businesses
 {
     [ApiController]
     [Authorize(Roles = "Admin, User")]

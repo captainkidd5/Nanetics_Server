@@ -2,7 +2,7 @@
 using Models.Authentication;
 using System.Security.Claims;
 
-namespace SilverMenu.DependencyInjections.Authentication
+namespace Api.DependencyInjections.Authentication
 {
     public interface IAuthManager
     {

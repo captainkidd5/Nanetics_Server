@@ -1,7 +1,7 @@
 ﻿using Core;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SilverMenu.Configurations
+namespace Api.Configurations
 {
     internal class VersionConfiguration : ConfigurationBase
     {

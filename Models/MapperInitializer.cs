@@ -12,8 +12,8 @@ namespace Models
 {
 
     //call from respository (uppermost) folder
-    //dotnet ef migrations add remove_cloudflare_api -s SilverMenu -p databaseservices
-    //dotnet ef database update -s SilverMenu -p databaseservices
+    //dotnet ef migrations add remove_cloudflare_api -s Api -p databaseservices
+    //dotnet ef database update -s Api -p databaseservices
     public class MapperInitializer :Profile
     {
         public MapperInitializer()

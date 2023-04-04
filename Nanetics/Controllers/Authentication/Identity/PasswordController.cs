@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Models.Authentication;
-using SilverMenu.DependencyInjections.Authentication;
-using SilverMenu.DependencyInjections.Email;
+using Api.DependencyInjections.Authentication;
+using Api.DependencyInjections.Email;
 using System.Security.Claims;
 using System.Web;
 
-namespace SilverMenu.Controllers.Authentication.Identity
+namespace Api.Controllers.Authentication.Identity
 {
 
     [ApiController]

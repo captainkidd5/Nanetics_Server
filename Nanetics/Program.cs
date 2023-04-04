@@ -4,9 +4,9 @@ using Azure.Security.KeyVault.Secrets;
 using Core.DependencyInjections;
 using Core;
 using DatabaseServices;
-using SilverMenu.Configurations;
-using SilverMenu.DependencyInjections.Authentication;
-using SilverMenu.DependencyInjections.Azure;
+using Api.Configurations;
+using Api.DependencyInjections.Authentication;
+using Api.DependencyInjections.Azure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,17 +21,17 @@ using Services;
 using System.Configuration;
 using System.Net;
 using System.Text;
-using SilverMenu.Configurations;
-using SilverMenu.DependencyInjections.Authentication;
-using SilverMenu.DependencyInjections.Azure;
+using Api.Configurations;
+using Api.DependencyInjections.Authentication;
+using Api.DependencyInjections.Azure;
 using Core;
 using Core.DependencyInjections;
 using Models;
-using SilverMenu.DependencyInjections.Email;
+using Api.DependencyInjections.Email;
 using ExceptionHandling.CustomMiddlewares;
 using SendGrid.SmtpApi;
 using Microsoft.AspNetCore.Identity;
-using SilverMenu.DependencyInjections.S3;
+using Api.DependencyInjections.S3;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -65,20 +65,25 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
                       policy =>
                       {
-                          policy.WithOrigins("http://localhost:3000/",
-                                              "http://www.localhost:3000/",
-                              "http://localhost:3001/",
-                              "http://localhost:3001",
-                              "http://www.localhost:3001/",
+                          //policy.WithOrigins("http://localhost:3000/",
+                          //                    "http://www.localhost:3000/",
+                          //    "http://localhost:3001/",
+                          //    "http://localhost:3001",
+                          //    "http://www.localhost:3001/",
 
-                                              "http://localhost:3000",
-                                              "http://localhost:19006/",
-                                              "http://www.localhost:19006/",
-                                              "http://localhost:19006");
+                          //                    "http://localhost:3000",
+                          //                    "http://localhost:19006/",
+                          //                    "http://www.localhost:19006/",
+                          //                    "http://localhost:19006",
+
+                          //                    "http://192.168.4.39",
+                          //                       "http://192.168.4.21"
+                          //                    );
+                          policy.AllowAnyOrigin();
 
                           policy.AllowAnyHeader();
                           policy.AllowAnyMethod();
-                          policy.AllowCredentials();
+                          //policy.AllowCredentials();
 
                       });
 });

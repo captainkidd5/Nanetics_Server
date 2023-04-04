@@ -3,7 +3,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Contracts.Media;
 
-namespace SilverMenu.DependencyInjections.S3
+namespace Api.DependencyInjections.S3
 {
 	public interface IS3Helper
 	{

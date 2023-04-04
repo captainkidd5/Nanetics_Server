@@ -1,7 +1,7 @@
 ﻿using Microsoft.OpenApi.Models;
 using Core;
 
-namespace SilverMenu.Configurations
+namespace Api.Configurations
 {
     internal class SwaggerConfiguration : ConfigurationBase
     {
@@ -14,7 +14,7 @@ namespace SilverMenu.Configurations
             base.Build();
             Builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SilverMenu", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api", Version = "v1" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
