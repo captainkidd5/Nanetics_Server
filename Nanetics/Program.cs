@@ -65,21 +65,23 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
                       policy =>
                       {
-                          //policy.WithOrigins("http://localhost:3000/",
-                          //                    "http://www.localhost:3000/",
-                          //    "http://localhost:3001/",
-                          //    "http://localhost:3001",
-                          //    "http://www.localhost:3001/",
+                          policy.WithOrigins("http://localhost:3000/",
+                                              "http://www.localhost:3000/",
+                              "http://localhost:3001/",
+                              "http://localhost:3001",
+                              "http://www.localhost:3001/",
 
-                          //                    "http://localhost:3000",
-                          //                    "http://localhost:19006/",
-                          //                    "http://www.localhost:19006/",
-                          //                    "http://localhost:19006",
+                                              "http://localhost:3000",
+                                              "http://localhost:19006/",
+                                              "http://www.localhost:19006/",
+                                              "http://localhost:19006",
 
-                          //                    "http://192.168.4.39",
-                          //                       "http://192.168.4.21"
-                          //                    );
-                          policy.AllowAnyOrigin();
+                                              "http://192.168.4.39",
+                                                 "http://192.168.4.21",
+                                                 "http://192.168.1.184"
+
+                                              );
+                         // policy.AllowAnyOrigin();
 
                           policy.AllowAnyHeader();
                           policy.AllowAnyMethod();
@@ -102,7 +104,7 @@ string keyVaultName = builder.Configuration.GetSection("Azure").GetSection("KeyV
 string kvUri = "https://" + keyVaultName + ".vault.azure.net";
 SecretClient secretClient = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
 
-var secret = secretClient.GetSecret("GooglePlacesAPIKey");
+//var secret = secretClient.GetSecret("GooglePlacesAPIKey");
 string dbSecret = secretClient.GetSecret("ConnectionStrings--switchcountdb").Value.Value;
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbSecret));
 

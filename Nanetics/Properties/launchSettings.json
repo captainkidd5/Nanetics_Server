@@ -4,7 +4,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://127.0.0.1:8080",
+      "applicationUrl": "http://localhost:8080",
       "sslPort": 0
     }
   },
@@ -12,8 +12,8 @@
     "Api": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "swagger",
-      "applicationUrl": "http://127.0.0.1:8080",
+      "launchUrl": "",
+      "applicationUrl": "http://localhost:8080",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "VaultUri": "https://waiikivault.vault.azure.net/",
@@ -24,7 +24,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "swagger",
+      "launchUrl": "",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "VaultUri": "https://waiikivault.vault.azure.net/",
