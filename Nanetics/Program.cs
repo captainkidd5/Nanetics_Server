@@ -32,6 +32,8 @@ using ExceptionHandling.CustomMiddlewares;
 using SendGrid.SmtpApi;
 using Microsoft.AspNetCore.Identity;
 using Api.DependencyInjections.S3;
+using Api.DependencyInjections.MQTT;
+using Core.DependencyInjections.MQTT;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -129,10 +131,12 @@ Serilog.Log.Logger = new LoggerConfiguration()
 
 
 builder.Host.UseSerilog();
-
+builder.Services.AddSingleton<IMQTTService, MQTTService>();
 
 builder.Services.AddHostedService<LoggerWorker>();
 builder.Services.AddHostedService<PushWorker>();
+builder.Services.AddHostedService<MQTTWorker>();
+
 
 builder.Services.AddHttpClient();
 

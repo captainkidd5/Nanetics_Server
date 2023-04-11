@@ -25,6 +25,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.25.1" />
+    <PackageReference Include="MQTTnet" Version="4.1.4.563" />
     <PackageReference Include="SendGrid" Version="9.28.1" />
     <PackageReference Include="SendGrid.SmtpApi" Version="1.4.6" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
@@ -33,6 +34,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.25.1" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.103.36" />
+    <PackageReference Include="Zeroconf" Version="3.6.11" />
   </ItemGroup>
 
   <ItemGroup>

@@ -20,12 +20,12 @@
     },
     "secrets1": {
       "type": "secrets",
-      "connectionId": "VaultUri",
-      "dynamicId": null
+      "connectionId": "VaultUri"
     },
     "mssql2": {
       "type": "mssql",
-      "connectionId": "ConnectionStrings:switchcountdb"
+      "connectionId": "ConnectionStrings:switchcountdb",
+      "dynamicId": null
     }
   }
 }

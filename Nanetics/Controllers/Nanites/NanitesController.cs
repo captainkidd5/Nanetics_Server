@@ -27,5 +27,7 @@ namespace Api.Controllers.Gadgets
         {
             return Ok(new {Message = "test"});
         }
+
+
     }
 }
