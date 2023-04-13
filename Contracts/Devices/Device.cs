@@ -10,4 +10,15 @@ namespace Contracts.Devices
     {
         public string Message { get; set; }
     }
+
+    public class DeviceRegistryRequest
+    {
+        public string DeviceHardWareId { get; set; }
+    }
+
+    public class DeviceRegistryResponse
+    {
+        public string X509Thumbprint { get; set; }
+        public string AssignedId { get; set; }
+    }
 }

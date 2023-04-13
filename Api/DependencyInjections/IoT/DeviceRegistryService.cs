@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Api.DependencyInjections.Azure;
+using Contracts.Devices;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Common.Exceptions;
 using Models.Authentication;
@@ -11,7 +12,7 @@ namespace Api.DependencyInjections.IoT
     /// <summary>
     /// <see cref="https://github.com/Azure/azure-iot-sdk-csharp/blob/main/iothub/service/samples/how%20to%20guides/RegistryManagerSample/RegistryManagerSample.cs"/>
     /// </summary>
-    public class DeviceRegistry
+    public class DeviceRegistry : IDeviceRegistryService
     {
         private readonly IKeyVaultRetriever _keyVaultRetriever;
 
@@ -23,14 +24,14 @@ namespace Api.DependencyInjections.IoT
   
 
 
-        private async Task<Device> CreateAndRegisterDevice(ApplicationUser user, string deviceNickName)
+        public async Task<Device> CreateAndRegisterDevice(DeviceRegistryRequest registryRequest)
         {
             using RegistryManager registryManager = RegistryManager
               .CreateFromConnectionString(_keyVaultRetriever.RetrieveKey("IoTHubConnectionString").Value);
 
             Device device;
-            string deviceId = GenerateDeviceId(user);
-            X509Certificate2 cert = CreateSelfSignCert(deviceNickName);
+            string deviceId = GenerateDeviceId(registryRequest.DeviceHardWareId);
+            X509Certificate2 cert = CreateSelfSignCert(registryRequest.DeviceHardWareId);
             try
             {
                 device = new Device(deviceId)
@@ -74,9 +75,9 @@ namespace Api.DependencyInjections.IoT
 
         //}
 
-        private string GenerateDeviceId(ApplicationUser user)
+        private string GenerateDeviceId(string deviceHardwarId)
         {
-            string deviceId = user.Id + "_" + Guid.NewGuid().ToString().Substring(0, 8);
+            string deviceId = deviceHardwarId + "_" + Guid.NewGuid().ToString().Substring(0, 8);
             return deviceId;
         }
 
