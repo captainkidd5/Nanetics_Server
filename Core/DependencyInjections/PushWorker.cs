@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Models.Authentication;
-using Models.Devices;
+using Models.Phones;
 using Models.Logging;
 using NodaTime.TimeZones;
 using Services;
@@ -58,25 +58,25 @@ namespace Core.DependencyInjections
                         };
                         foreach (var user in users)
                         {
-                            foreach(Device device in user.Devices)
-                            {
-                                ptRequest.PushTo.Add(device.ExpoPushToken.ToString());
+                            //foreach(Device device in user.Devices)
+                            //{
+                            //    ptRequest.PushTo.Add(device.ExpoPushToken.ToString());
 
 
-                                TimeZoneInfo tzi = GetTimeZoneInfoForTzdbId(device.TimeZone);
-                                DateTime date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tzi);
-                                //Only push notifications at 9 oclock
-                                if (date.Hour == 9 && date.Minute == 0)
-                                {
-                                    PushTicketResponse response = await _pushApiClient.PushSendAsync(ptRequest);
-                                    if (response.PushTicketErrors != null)
-                                    {
-                                        Console.WriteLine("test");
-                                    }
+                            //    TimeZoneInfo tzi = GetTimeZoneInfoForTzdbId(device.TimeZone);
+                            //    DateTime date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tzi);
+                            //    //Only push notifications at 9 oclock
+                            //    if (date.Hour == 9 && date.Minute == 0)
+                            //    {
+                            //        PushTicketResponse response = await _pushApiClient.PushSendAsync(ptRequest);
+                            //        if (response.PushTicketErrors != null)
+                            //        {
+                            //            Console.WriteLine("test");
+                            //        }
 
                                  
-                                }
-                            }
+                            //    }
+                            //}
                         }
 
                         await context.SaveChangesAsync();

@@ -1,6 +1,6 @@
-﻿using Contracts.Nanites;
+﻿using Contracts.Devices;
 using Microsoft.AspNetCore.Mvc;
-using Models.Devices;
+using Models.Phones;
 
 namespace Api.Controllers.Gadgets
 {

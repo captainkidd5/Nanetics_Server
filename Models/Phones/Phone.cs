@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Models.Devices
+namespace Models.Phones
 {
-    public class Device
+    public class Phone
     {
         public string Id { get; set; }
 

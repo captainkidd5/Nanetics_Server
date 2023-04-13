@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
 using Models.BusinessStuff;
-using Models.Devices;
+using Models.Phones;
 using Newtonsoft.Json.Linq;
 using Api.DependencyInjections.Authentication;
 using Api.DependencyInjections.S3;

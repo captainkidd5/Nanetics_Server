@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
 using Models.BusinessStuff;
-using Models.Devices;
+using Models.Phones;
 using Models.Logging;
 //using Services.Seeding.Identity;
 using Services.Seeding.Logging;

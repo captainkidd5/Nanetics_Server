@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using Models.BusinessStuff;
-using Models.Devices;
+using Models.Phones;
 
 namespace Models.Authentication
 {
@@ -15,7 +15,6 @@ namespace Models.Authentication
         public DateTime RefreshTokenExpiryTime { get; set; }
 
 
-        public List<Device> Devices { get; set; }
 
         public string? FirstName { get; set; }
         public string? LastName { get; set; }

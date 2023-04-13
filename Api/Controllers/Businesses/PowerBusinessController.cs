@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
 using Models.BusinessStuff;
-using Models.Devices;
+using Models.Phones;
 using Api.DependencyInjections.Authentication;
 
 namespace Api.Controllers.Businesses

@@ -4,22 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Models.Devices
+namespace Contracts.Devices
 {
-    public class DeviceRegistrationRequest
+    public class PingDTO
     {
-      
-        public string Token { get; set; }
-
-        //Use to see if should send daily notification to user
-        public Calendar Calendar { get; set; }
+        public string Message { get; set; }
     }
-
-    public class Calendar
-    {
-        public string TimeZone { get; set; }
-    }
-
-
-    
 }

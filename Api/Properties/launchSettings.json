@@ -12,7 +12,6 @@
     "Api": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "",
       "applicationUrl": "http://localhost:8080",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
@@ -24,7 +23,6 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "VaultUri": "https://waiikivault.vault.azure.net/",
