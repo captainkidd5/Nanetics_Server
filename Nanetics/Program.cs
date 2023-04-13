@@ -7,32 +7,16 @@ using DatabaseServices;
 using Api.Configurations;
 using Api.DependencyInjections.Authentication;
 using Api.DependencyInjections.Azure;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Models.Authentication;
-using Models.Logging;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
-using Services;
-using System.Configuration;
-using System.Net;
-using System.Text;
-using Api.Configurations;
-using Api.DependencyInjections.Authentication;
-using Api.DependencyInjections.Azure;
-using Core;
-using Core.DependencyInjections;
 using Models;
 using Api.DependencyInjections.Email;
 using ExceptionHandling.CustomMiddlewares;
-using SendGrid.SmtpApi;
 using Microsoft.AspNetCore.Identity;
 using Api.DependencyInjections.S3;
-using Api.DependencyInjections.MQTT;
 using Core.DependencyInjections.MQTT;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -87,7 +71,7 @@ builder.Services.AddCors(options =>
 
                           policy.AllowAnyHeader();
                           policy.AllowAnyMethod();
-                          //policy.AllowCredentials();
+                          policy.AllowCredentials();
 
                       });
 });
@@ -135,7 +119,7 @@ builder.Services.AddSingleton<IMQTTService, MQTTService>();
 
 builder.Services.AddHostedService<LoggerWorker>();
 builder.Services.AddHostedService<PushWorker>();
-builder.Services.AddHostedService<MQTTWorker>();
+//builder.Services.AddHostedService<MQTTWorker>();
 
 
 builder.Services.AddHttpClient();
