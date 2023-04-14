@@ -78,6 +78,7 @@ namespace Api.Controllers.Devices
                 {
                     Id = assignedId,
                     HardwareId = registryRequest.DeviceHardWareId,
+                    X509PrimaryThumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint,
                     GenerationId = 1,
                     ETag = Guid.NewGuid().ToString().Substring(0, 8),
                     ConnectionState = DeviceConnectionState.Disconnected,
