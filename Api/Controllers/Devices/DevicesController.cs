@@ -1,10 +1,13 @@
-﻿using Contracts.Devices;
+﻿using AutoMapper;
+using Contracts.Authentication.Identity.Create;
+using Contracts.Devices;
 using DatabaseServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Devices;
 using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
+using Models.Devices;
 using Models.Phones;
 
 namespace Api.Controllers.Devices
@@ -28,12 +31,14 @@ namespace Api.Controllers.Devices
     public class DevicesController : ControllerBase
     {
         private readonly AppDbContext _dbContext;
+        private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDeviceRegistryService _deviceRegistryService;
 
-        public DevicesController(AppDbContext dbContext, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
+        public DevicesController(AppDbContext dbContext,IMapper mapper, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
         {
             _dbContext = dbContext;
+            _mapper = mapper;
             _userManager = userManager;
             _deviceRegistryService = deviceRegistryService;
         }
@@ -62,7 +67,7 @@ namespace Api.Controllers.Devices
                 if (_dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == registryRequest.DeviceHardWareId) != null)
                     throw new Exception($"Device with hardware id {registryRequest.DeviceHardWareId} already exists in database");
 
-                Device device = await _deviceRegistryService.CreateAndRegisterDevice(registryRequest);
+                Microsoft.Azure.Devices.Device device = await _deviceRegistryService.CreateAndRegisterDevice(registryRequest);
                 string assignedId = Guid.NewGuid().ToString();
                 DeviceRegistryResponse response = new DeviceRegistryResponse() {
                     AssignedId = assignedId,
@@ -94,18 +99,25 @@ namespace Api.Controllers.Devices
         }
 
         [HttpGet]
-        [Route("GetDevices")]
-        public async Task<List<Models.Devices.Device>> GetDevices()
+        [Route("devices")]
+        public async Task<DeviceQueryResponse> GetDevices([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            try
-            {
-                var devices = await _dbContext.Devices.ToListAsync();
-                return devices;
-            }
-            catch(Exception e)
-            {
-                return new List<Models.Devices.Device>();
-            }
+            int totalDevices = await _dbContext.Devices.CountAsync();
+
+            // Calculate the number of pages
+            int totalPages = (int)Math.Ceiling((double)totalDevices / pageSize);
+
+            // Get the users for the specified page
+            var devices = await _dbContext.Devices
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            List<DeviceDTO> deviceDTOs = _mapper.Map<List<Models.Devices.Device>, List<DeviceDTO>>(devices);
+
+
+            // Return the paginated results in a JSON object
+            return new DeviceQueryResponse() { Devices = deviceDTOs, TotalCount = totalDevices };
         }
 
         [HttpGet]

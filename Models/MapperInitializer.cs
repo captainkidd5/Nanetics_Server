@@ -3,10 +3,12 @@ using AutoMapper;
 using Contracts.Authentication.Identity.Create;
 using Contracts.Authentication.Identity.Roles;
 using Contracts.BusinessStuff;
+using Contracts.Devices;
 using Contracts.Logging;
 using Contracts.Media;
 using Models.Authentication;
 using Models.BusinessStuff;
+using Models.Devices;
 using Models.Logging;
 namespace Models
 {
@@ -33,6 +35,9 @@ namespace Models
 
             CreateMap<Business, BusinessDTO>().ReverseMap();
             CreateMap<Business, BusinessRegistrationRequest>().ReverseMap();
+
+            CreateMap<Device, DeviceDTO>().ReverseMap();
+
 
 
 

@@ -12,11 +12,11 @@ namespace Api.DependencyInjections.IoT
     /// <summary>
     /// <see cref="https://github.com/Azure/azure-iot-sdk-csharp/blob/main/iothub/service/samples/how%20to%20guides/RegistryManagerSample/RegistryManagerSample.cs"/>
     /// </summary>
-    public class DeviceRegistry : IDeviceRegistryService
+    public class DeviceRegistryService : IDeviceRegistryService
     {
         private readonly IKeyVaultRetriever _keyVaultRetriever;
 
-        public DeviceRegistry(IKeyVaultRetriever keyVaultRetriever)
+        public DeviceRegistryService(IKeyVaultRetriever keyVaultRetriever)
         {
             _keyVaultRetriever = keyVaultRetriever;
         }
@@ -75,21 +75,21 @@ namespace Api.DependencyInjections.IoT
 
         //}
 
-        private string GenerateDeviceId(string deviceHardwarId)
+        private string GenerateDeviceId(ulong deviceHardwarId)
         {
             string deviceId = deviceHardwarId + "_" + Guid.NewGuid().ToString().Substring(0, 8);
             return deviceId;
         }
 
-        private X509Certificate2 CreateSelfSignCert(string deviceName)
+        private X509Certificate2 CreateSelfSignCert(ulong hardwareId)
         {
-            string subjectName = deviceName; // e.g. "CN=MyDevice"
+            string subjectName = hardwareId.ToString(); // e.g. "CN=MyDevice"
             DateTimeOffset validFrom = DateTimeOffset.UtcNow.AddDays(-1);
             DateTimeOffset validTo = DateTimeOffset.UtcNow.AddDays(365);
             X509Certificate2 deviceCertificate = new X509Certificate2();
             using (RSA rsa = RSA.Create(2048))
             {
-                var certRequest = new CertificateRequest($"CN={deviceName}", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                var certRequest = new CertificateRequest($"CN={hardwareId}", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                 certRequest.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, true));
                 certRequest.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, false));
                 certRequest.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid("1.3.6.1.5.5.7.3.2") }, false));

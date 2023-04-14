@@ -18,6 +18,7 @@ using ExceptionHandling.CustomMiddlewares;
 using Microsoft.AspNetCore.Identity;
 using Api.DependencyInjections.S3;
 using Core.DependencyInjections.MQTT;
+using Api.DependencyInjections.IoT;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -85,6 +86,8 @@ swaggerConfig.Build();
 builder.Services.AddScoped<IKeyVaultRetriever, KeyVaultRetriever>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<IS3Helper, S3Helper>();
+builder.Services.AddTransient<IDeviceRegistryService, DeviceRegistryService>();
+
 
 string keyVaultName = builder.Configuration.GetSection("Azure").GetSection("KeyVaultName").Value;
 string kvUri = "https://" + keyVaultName + ".vault.azure.net";

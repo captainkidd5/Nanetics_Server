@@ -16,7 +16,7 @@ namespace Models.Devices
     {
         public string Id { get; set; } = string.Empty;
 
-        public string HardwareId { get; set; } = string.Empty;
+        public ulong HardwareId { get; set; }
         /// <summary>
         /// Basically the version, used for firmware updates
         /// </summary>
