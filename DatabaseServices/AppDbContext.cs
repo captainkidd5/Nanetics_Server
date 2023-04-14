@@ -7,6 +7,7 @@ using Models.Phones;
 using Models.Logging;
 //using Services.Seeding.Identity;
 using Services.Seeding.Logging;
+using Models.Devices;
 
 namespace DatabaseServices
 {
@@ -17,6 +18,7 @@ namespace DatabaseServices
         public DbSet<Log> Logs { get; set; }
         public DbSet<Business> Businesses { get; set; }
 
+        public DbSet<Device> Devices { get; set; }
 
 
         public AppDbContext(DbContextOptions options) : base(options)

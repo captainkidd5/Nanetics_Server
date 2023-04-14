@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Identity;
 using Models.BusinessStuff;
+using Models.Devices;
 using Models.Phones;
 
 namespace Models.Authentication
@@ -20,6 +21,8 @@ namespace Models.Authentication
         public string? LastName { get; set; }
 
         public List<Business> Businesses { get; set; }
+
+        public List<Device> Devices { get; set; }
 
 
     }

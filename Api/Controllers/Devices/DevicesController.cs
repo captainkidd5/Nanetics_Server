@@ -1,7 +1,9 @@
 ﻿using Contracts.Devices;
+using DatabaseServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Devices;
+using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
 using Models.Phones;
 
@@ -25,11 +27,13 @@ namespace Api.Controllers.Devices
 
     public class DevicesController : ControllerBase
     {
+        private readonly AppDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDeviceRegistryService _deviceRegistryService;
 
-        public DevicesController(UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
+        public DevicesController(AppDbContext dbContext, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
         {
+            _dbContext = dbContext;
             _userManager = userManager;
             _deviceRegistryService = deviceRegistryService;
         }
@@ -45,7 +49,8 @@ namespace Api.Controllers.Devices
         }
 
         /// <summary>
-        /// Device is plugged in, if device does NOT have a device id and x509 certificate, then ping api for a new one.
+        /// Device is plugged in, if device does NOT have a device id and x509 certificate, then ping api for a new one. Will both
+        /// register the device in IoT and in db (without owner)
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -54,22 +59,60 @@ namespace Api.Controllers.Devices
         {
             try
             {
+                if (_dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == registryRequest.DeviceHardWareId) != null)
+                    throw new Exception($"Device with hardware id {registryRequest.DeviceHardWareId} already exists in database");
+
                 Device device = await _deviceRegistryService.CreateAndRegisterDevice(registryRequest);
-                DeviceRegistryResponse response = new DeviceRegistryResponse() { }
-                return Ok(new { Message = "test" });
+                string assignedId = Guid.NewGuid().ToString();
+                DeviceRegistryResponse response = new DeviceRegistryResponse() {
+                    AssignedId = assignedId,
+                    X509Thumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint
+                };
+                
+                Models.Devices.Device modelDevice = new Models.Devices.Device()
+                {
+                    Id = assignedId,
+                    HardwareId = registryRequest.DeviceHardWareId,
+                    GenerationId = 1,
+                    ETag = Guid.NewGuid().ToString().Substring(0, 8),
+                    ConnectionState = DeviceConnectionState.Disconnected,
+                    Status = DeviceStatus.Disabled,
+                    CloudToDeviceMessageCount = 1
+
+                };
+          
+
+                await _dbContext.Devices.AddAsync(modelDevice);
+                await _dbContext.SaveChangesAsync();
+                return Ok(response);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return BadRequest();
             }
-            
+
+        }
+
+        [HttpGet]
+        [Route("GetDevices")]
+        public async Task<List<Models.Devices.Device>> GetDevices()
+        {
+            try
+            {
+                var devices = await _dbContext.Devices.ToListAsync();
+                return devices;
+            }
+            catch(Exception e)
+            {
+                return new List<Models.Devices.Device>();
+            }
         }
 
         [HttpGet]
         [Route("GetData")]
         public async Task<IActionResult> GetData()
         {
-            return Ok(new {Message = "test"});
+            return Ok(new { Message = "test" });
         }
 
 
