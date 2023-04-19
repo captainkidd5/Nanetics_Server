@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Contracts.Media;
 
-namespace Contracts.BusinessStuff
+namespace Contracts.GroupingStuff
 {
-    public class BusinessDTO
+    public class GroupingDTO
     {
         public string Id { get; set; }
 
@@ -20,13 +20,13 @@ namespace Contracts.BusinessStuff
 
 
 
-    public class BusinessRegistrationRequest
+    public class GroupingRegistrationRequest
     {
         public string? Name { get; set; }
         public string? Description { get; set; }
     }
 
-    public class BusinessUpdateRequest
+    public class GroupingUpdateRequest
     {
 
         [Required]

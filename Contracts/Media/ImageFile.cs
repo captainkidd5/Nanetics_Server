@@ -17,7 +17,7 @@ namespace Contracts.Media
 
     public class ImageUploadSignatureRequest
     {
-        public string? BusinessId { get; set; }
+        public string? GroupingId { get; set; }
 
         public string FileName { get; set; }
         public string FileType { get; set; }

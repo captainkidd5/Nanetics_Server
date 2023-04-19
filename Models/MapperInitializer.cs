@@ -2,13 +2,13 @@
 using AutoMapper;
 using Contracts.Authentication.Identity.Create;
 using Contracts.Authentication.Identity.Roles;
-using Contracts.BusinessStuff;
 using Contracts.Devices;
+using Contracts.GroupingStuff;
 using Contracts.Logging;
 using Contracts.Media;
 using Models.Authentication;
-using Models.BusinessStuff;
 using Models.Devices;
+using Models.GroupingStuff;
 using Models.Logging;
 namespace Models
 {
@@ -33,8 +33,8 @@ namespace Models
 
             CreateMap<ApplicationUser, CreateUserDTO>().ReverseMap();
 
-            CreateMap<Business, BusinessDTO>().ReverseMap();
-            CreateMap<Business, BusinessRegistrationRequest>().ReverseMap();
+            CreateMap<Grouping, GroupingDTO>().ReverseMap();
+            CreateMap<Grouping, GroupingRegistrationRequest>().ReverseMap();
 
             CreateMap<Device, DeviceDTO>().ReverseMap();
 

@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Models.BusinessStuff
+namespace Models.GroupingStuff
 {
-    public class Business
+    public class Grouping
     {
         public string Id { get; set; }
         public string Name { get; set; }

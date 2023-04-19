@@ -11,6 +11,7 @@ using Api.DependencyInjections.Email;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 using System.Collections.Generic;
+using Models.GroupingStuff;
 
 namespace Api.Controllers.Authentication.Identity
 {
@@ -79,7 +80,7 @@ namespace Api.Controllers.Authentication.Identity
             user.FirstName = userDTO.FirstName.ToLower();
             user.LastName = userDTO.LastName.ToLower();
             user.PhoneNumber = userDTO.PhoneNumber;
-            user.Businesses = new List<Models.BusinessStuff.Business>();
+            user.Groupings = new List<Grouping>();
             var result = await _userManager.CreateAsync(user, userDTO.Password);
 
             if (!result.Succeeded)
@@ -197,7 +198,7 @@ namespace Api.Controllers.Authentication.Identity
             int totalPages = (int)Math.Ceiling((double)totalUsers / pageSize);
 
             // Get the users for the specified page
-            var users = await _userManager.Users.Include("Businesses")
+            var users = await _userManager.Users.Include("Groupings")
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

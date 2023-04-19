@@ -2,7 +2,6 @@
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Azure.Storage.Blobs;
-using Contracts.BusinessStuff;
 using Contracts.Media;
 using DatabaseServices;
 using Microsoft.AspNetCore.Authorization;
@@ -10,18 +9,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
-using Models.BusinessStuff;
 using Models.Phones;
 using Newtonsoft.Json.Linq;
 using Api.DependencyInjections.Authentication;
 using Api.DependencyInjections.S3;
+using Contracts.GroupingStuff;
+using Models.GroupingStuff;
 
-namespace Api.Controllers.Businesses
+namespace Api.Controllers.groupings
 {
     [ApiController]
     [Authorize(Roles = "Admin, User")]
     [Route("[controller]")]
-    public class BusinessController : Controller
+    public class GroupingController : Controller
     {
         private readonly AppDbContext _appDbContext;
         private readonly IAuthManager _authManager;
@@ -30,7 +30,7 @@ namespace Api.Controllers.Businesses
         private readonly IConfiguration _configuration;
         private readonly IS3Helper _s3Helper;
 
-        public BusinessController(AppDbContext appDbContext, IAuthManager authManager,
+        public GroupingController(AppDbContext appDbContext, IAuthManager authManager,
             UserManager<ApplicationUser> userManager, IMapper iMapper, IConfiguration configuration, IS3Helper s3Helper)
         {
             _appDbContext = appDbContext;
@@ -43,50 +43,50 @@ namespace Api.Controllers.Businesses
 
 
         [HttpGet]
-        [Route("doesBusinessExist")]
+        [Route("doesgroupingExist")]
 
-        public async Task<IActionResult> DoesBusinessExist([FromQuery] string businessName)
+        public async Task<IActionResult> DoesgroupingExist([FromQuery] string groupingName)
         {
-            bool exists = await _appDbContext.Businesses.FirstOrDefaultAsync(x => x.Name == businessName) != null;
+            bool exists = await _appDbContext.Groupings.FirstOrDefaultAsync(x => x.Name == groupingName) != null;
 
             return Ok(exists);
 
         }
 
         [HttpPost]
-        [Route("createBusiness")]
+        [Route("creategrouping")]
 
-        public async Task<IActionResult> CreateBusiness([FromBody] BusinessRegistrationRequest businessRegistrationRequest)
+        public async Task<IActionResult> Creategrouping([FromBody] GroupingRegistrationRequest groupingRegistrationRequest)
         {
             ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
             if (user == null)
                 return Unauthorized("Invalid refresh token");
 
-            user = await _appDbContext.Users.Include("Businesses").FirstOrDefaultAsync(x => x.Id == user.Id);
+            user = await _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
 
-            if (user.Businesses != null && user.Businesses.Count > 0)
-                return BadRequest("User has max business count");
+            //if (user.Groupings != null && user.Groupings.Count > 0)
+            //    return BadRequest("User has max grouping count");
 
-            if (user.Businesses == null)
-                user.Businesses = new List<Business>();
-            bool exists = await _appDbContext.Businesses.FirstOrDefaultAsync(x => x.Name.ToLower() == businessRegistrationRequest.Name.ToLower()) != null;
+            if (user.Groupings == null)
+                user.Groupings = new List<Grouping>();
+            bool exists = await _appDbContext.Groupings.FirstOrDefaultAsync(x => x.Name.ToLower() == groupingRegistrationRequest.Name.ToLower()) != null;
 
             if (exists)
                 return BadRequest("Name taken");
 
-            Business business = _iMapper.Map<Business>(businessRegistrationRequest);
+            Grouping grouping = _iMapper.Map<Grouping>(groupingRegistrationRequest);
 
-            business.Id = Guid.NewGuid().ToString();
-            business.User = user;
-            business.UserId = user.Id;
-            business.BannerImagePath = string.Empty;
-            user.Businesses.Add(business);
+            grouping.Id = Guid.NewGuid().ToString();
+            grouping.User = user;
+            grouping.UserId = user.Id;
+            grouping.BannerImagePath = string.Empty;
+            user.Groupings.Add(grouping);
             await _userManager.UpdateAsync(user);
 
-            //var result = await _appDbContext.Businesses.AddAsync(business);
+            //var result = await _appDbContext.groupings.AddAsync(grouping);
             // await _appDbContext.SaveChangesAsync();
 
             return Ok();
@@ -95,29 +95,29 @@ namespace Api.Controllers.Businesses
         }
 
         [HttpPut]
-        [Route("updateBusiness")]
+        [Route("updategrouping")]
 
-        public async Task<IActionResult> UpdateBusiness([FromBody] BusinessUpdateRequest businessUpdateRequest)
+        public async Task<IActionResult> Updategrouping([FromBody] GroupingUpdateRequest groupingUpdateRequest)
         {
             ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
             if (user == null)
                 return Unauthorized("Invalid refresh token");
 
-            user = await _appDbContext.Users.Include("Businesses").FirstOrDefaultAsync(x => x.Id == user.Id);
+            user = await _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (user.Businesses == null)
-                return BadRequest($"User has no businesses");
+            if (user.Groupings == null)
+                return BadRequest($"User has no groupings");
 
-            Business business = user.Businesses.FirstOrDefault(x => x.Id == businessUpdateRequest.Id);
-            if (business == null)
-                return BadRequest($"Business with id {businessUpdateRequest.Id} not found");
+            Grouping grouping = user.Groupings.FirstOrDefault(x => x.Id == groupingUpdateRequest.Id);
+            if (grouping == null)
+                return BadRequest($"grouping with id {groupingUpdateRequest.Id} not found");
 
-            if (business.User != user)
-                return BadRequest("User must own business to update it");
-            business = _iMapper.Map<Business>(businessUpdateRequest);
+            if (grouping.User != user)
+                return BadRequest("User must own grouping to update it");
+            grouping = _iMapper.Map<Grouping>(groupingUpdateRequest);
 
 
             _appDbContext.Update(user);
@@ -128,59 +128,59 @@ namespace Api.Controllers.Businesses
         }
 
         [HttpGet]
-        [Route("getBusinessesForUser")]
+        [Route("getgroupingesForUser")]
 
-        public async Task<IActionResult> GetBusinessesForUser([FromQuery] string userId)
+        public async Task<IActionResult> GetgroupingesForUser([FromQuery] string userId)
         {
             ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
             if (user == null)
                 return Unauthorized("Invalid refresh token");
 
-            List<Business> businesses = _appDbContext.Users.Include("Businesses").FirstOrDefaultAsync(x => x.Id.ToString() == userId).Result.Businesses;
+            List<Grouping> groupings = _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id.ToString() == userId).Result.Groupings;
 
-            return Ok(businesses);
+            return Ok(groupings);
 
 
         }
         [HttpGet]
-        [Route("getBusiness")]
+        [Route("getgrouping")]
 
-        public async Task<IActionResult> GetBusiness()
+        public async Task<IActionResult> Getgrouping()
         {
             ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
             if (user == null)
                 return Unauthorized("Invalid refresh token");
 
-            var usr = await _appDbContext.Users.Include("Businesses").FirstOrDefaultAsync(x => x.Id == user.Id);
-            var busineses = usr.Businesses;
-            List<BusinessDTO> businessDTOs = _iMapper.Map<List<Business>, List<BusinessDTO>>(busineses);
-            return Ok(businessDTOs);
+            var usr = await _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
+            var busineses = usr.Groupings;
+            List<GroupingDTO> groupingDTOs = _iMapper.Map<List<Grouping>, List<GroupingDTO>>(busineses);
+            return Ok(groupingDTOs);
 
 
         }
         /// <summary>
-        /// User must be owner of business to delete it
+        /// User must be owner of grouping to delete it
         /// </summary>
-        /// <param name="businessId"></param>
+        /// <param name="groupingId"></param>
         /// <returns></returns>
 
         [HttpDelete]
-        [Route("deleteBusiness")]
-        public async Task<IActionResult> DeleteBusiness([FromQuery] string businessId)
+        [Route("deletegrouping")]
+        public async Task<IActionResult> Deletegrouping([FromQuery] string groupingId)
         {
             ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
             if (user == null)
                 return Unauthorized("Invalid refresh token");
 
-            List<Business> businesses = _appDbContext.Users.Include("Businesses").FirstOrDefaultAsync(x => x.Id == user.Id).Result.Businesses;
+            List<Grouping> groupings = _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id).Result.Groupings;
 
-            Business business = businesses.FirstOrDefault(x => x.Id == businessId);
+            Grouping grouping = groupings.FirstOrDefault(x => x.Id == groupingId);
 
-            if (business == null)
-                return NotFound($"User does not have business with id{businessId}");
-            if (business.User != user)
-                return BadRequest("Must be owner of business to delete it.");
-            _appDbContext.Businesses.Remove(business);
+            if (grouping == null)
+                return NotFound($"User does not have grouping with id{groupingId}");
+            if (grouping.User != user)
+                return BadRequest("Must be owner of grouping to delete it.");
+            _appDbContext.Groupings.Remove(grouping);
             var result = await _appDbContext.SaveChangesAsync();
 
             return Ok(result);
@@ -195,19 +195,19 @@ namespace Api.Controllers.Businesses
             if (user == null)
                 return Unauthorized("Invalid refresh token");
 
-            List<Business> businesses = _appDbContext.Users.Include("Businesses").FirstOrDefaultAsync(x => x.Id == user.Id).Result.Businesses;
+            List<Grouping> groupings = _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id).Result.Groupings;
 
-            Business business = businesses.FirstOrDefault(x => x.Id == imageUploadRequest.BusinessId);
+            Grouping grouping = groupings.FirstOrDefault(x => x.Id == imageUploadRequest.GroupingId);
 
-            if (business == null)
-                return NotFound($"User does not have business with id{imageUploadRequest.BusinessId}");
+            if (grouping == null)
+                return NotFound($"User does not have grouping with id{imageUploadRequest.GroupingId}");
 
 
 
             var filename = GenerateFileName(imageUploadRequest.FileName);
 
 
-            string presignedUrl = _s3Helper.GetPreSignedUrl(user.Id.ToString(),imageUploadRequest.FileName,business.Id);
+            string presignedUrl = _s3Helper.GetPreSignedUrl(user.Id.ToString(),imageUploadRequest.FileName,grouping.Id);
 
 
             return Ok(new SignatureResponse() { Url = presignedUrl});
@@ -228,12 +228,12 @@ namespace Api.Controllers.Businesses
         //    if (user == null)
         //        return Unauthorized("Invalid refresh token");
 
-        //    List<Business> businesses = _appDbContext.Users.Include("Businesses").FirstOrDefaultAsync(x => x.Id == user.Id).Result.Businesses;
+        //    List<grouping> groupings = _appDbContext.Users.Include("groupings").FirstOrDefaultAsync(x => x.Id == user.Id).Result.groupings;
 
-        //    Business business = businesses.FirstOrDefault(x => x.Id == bannerUploadRequest.BusinessId);
+        //    grouping grouping = groupings.FirstOrDefault(x => x.Id == bannerUploadRequest.groupingId);
 
-        //    if (business == null)
-        //        return NotFound($"User does not have business with id{bannerUploadRequest.BusinessId}");
+        //    if (grouping == null)
+        //        return NotFound($"User does not have grouping with id{bannerUploadRequest.groupingId}");
 
 
         //    string keyVaultName = _configuration.GetSection("Azure").GetSection("KeyVaultName").Value;

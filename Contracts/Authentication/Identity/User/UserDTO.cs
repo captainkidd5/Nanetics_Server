@@ -1,4 +1,4 @@
-﻿using Contracts.BusinessStuff;
+﻿using Contracts.GroupingStuff;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -54,7 +54,7 @@ namespace Contracts.Authentication.Identity.Create
 
         public ICollection<string> Roles { get; set; }
 
-        public ICollection<BusinessDTO> Businesses { get; set; }
+        public ICollection<GroupingDTO> Businesses { get; set; }
 
     }
 

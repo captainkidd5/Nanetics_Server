@@ -1,8 +1,8 @@
 ﻿
 
 using Microsoft.AspNetCore.Identity;
-using Models.BusinessStuff;
 using Models.Devices;
+using Models.GroupingStuff;
 using Models.Phones;
 
 namespace Models.Authentication
@@ -20,7 +20,7 @@ namespace Models.Authentication
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
 
-        public List<Business> Businesses { get; set; }
+        public List<Grouping> Groupings { get; set; }
 
         public List<Device> Devices { get; set; }
 
