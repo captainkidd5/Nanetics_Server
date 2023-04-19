@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Contracts.Devices;
 using Contracts.Media;
 
 namespace Contracts.GroupingStuff
@@ -15,6 +16,7 @@ namespace Contracts.GroupingStuff
 
         public string? Name { get; set; }
         public string? Description { get; set; }
+        public ICollection<DeviceDTO> Devices{ get; set; }
 
     }
 

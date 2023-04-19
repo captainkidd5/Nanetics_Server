@@ -4,6 +4,7 @@ using DatabaseServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatabaseServices.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230419191432__drop_device_table")]
+    partial class dropdevicetable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -235,58 +238,6 @@ namespace DatabaseServices.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Models.Devices.Device", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("CloudToDeviceMessageCount")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ConnectionState")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ConnectionStateUpdatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ETag")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("GenerationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("GroupingId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("HardwareId")
-                        .HasColumnType("decimal(20,0)");
-
-                    b.Property<DateTime>("LastActivityTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nickname")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StatusUpdatedTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("X509PrimaryThumbprint")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupingId");
-
-                    b.ToTable("Devices");
-                });
-
             modelBuilder.Entity("Models.GroupingStuff.Grouping", b =>
                 {
                     b.Property<string>("Id")
@@ -396,17 +347,6 @@ namespace DatabaseServices.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Models.Devices.Device", b =>
-                {
-                    b.HasOne("Models.GroupingStuff.Grouping", "Grouping")
-                        .WithMany("Devices")
-                        .HasForeignKey("GroupingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Grouping");
-                });
-
             modelBuilder.Entity("Models.GroupingStuff.Grouping", b =>
                 {
                     b.HasOne("Models.Authentication.ApplicationUser", "User")
@@ -421,11 +361,6 @@ namespace DatabaseServices.Migrations
             modelBuilder.Entity("Models.Authentication.ApplicationUser", b =>
                 {
                     b.Navigation("Groupings");
-                });
-
-            modelBuilder.Entity("Models.GroupingStuff.Grouping", b =>
-                {
-                    b.Navigation("Devices");
                 });
 #pragma warning restore 612, 618
         }

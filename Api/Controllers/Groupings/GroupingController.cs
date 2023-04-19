@@ -128,7 +128,7 @@ namespace Api.Controllers.groupings
         }
 
         [HttpGet]
-        [Route("getgroupingesForUser")]
+        [Route("getgroupingsForUser")]
 
         public async Task<IActionResult> GetgroupingesForUser([FromQuery] string userId)
         {
@@ -152,8 +152,8 @@ namespace Api.Controllers.groupings
                 return Unauthorized("Invalid refresh token");
 
             var usr = await _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
-            var busineses = usr.Groupings;
-            List<GroupingDTO> groupingDTOs = _iMapper.Map<List<Grouping>, List<GroupingDTO>>(busineses);
+            var groupings = usr.Groupings;
+            List<GroupingDTO> groupingDTOs = _iMapper.Map<List<Grouping>, List<GroupingDTO>>(groupings);
             return Ok(groupingDTOs);
 
 

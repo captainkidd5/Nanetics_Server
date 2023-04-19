@@ -54,7 +54,7 @@ namespace Contracts.Authentication.Identity.Create
 
         public ICollection<string> Roles { get; set; }
 
-        public ICollection<GroupingDTO> Businesses { get; set; }
+        public ICollection<GroupingDTO> Groupings { get; set; }
 
     }
 

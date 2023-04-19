@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Api.DependencyInjections.Authentication;
+using AutoMapper;
 using Contracts.Authentication.Identity.Create;
 using Contracts.Devices;
 using DatabaseServices;
@@ -8,7 +9,9 @@ using Microsoft.Azure.Devices;
 using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
 using Models.Devices;
+using Models.GroupingStuff;
 using Models.Phones;
+using Device = Models.Devices.Device;
 
 namespace Api.Controllers.Devices
 {
@@ -32,13 +35,15 @@ namespace Api.Controllers.Devices
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly IAuthManager _authManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDeviceRegistryService _deviceRegistryService;
 
-        public DevicesController(AppDbContext dbContext,IMapper mapper, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
+        public DevicesController(AppDbContext dbContext,IMapper mapper, IAuthManager authManager, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _authManager = authManager;
             _userManager = userManager;
             _deviceRegistryService = deviceRegistryService;
         }
@@ -64,6 +69,11 @@ namespace Api.Controllers.Devices
         {
             try
             {
+                ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+                if (user == null)
+                    return Unauthorized("Invalid refresh token");
+
+
                 if (_dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == registryRequest.DeviceHardWareId) != null)
                     throw new Exception($"Device with hardware id {registryRequest.DeviceHardWareId} already exists in database");
 
@@ -99,28 +109,45 @@ namespace Api.Controllers.Devices
 
         }
 
+      
         [HttpGet]
-        [Route("devices")]
-        public async Task<DeviceQueryResponse> GetDevices([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        [Route("devicesForGrouping")]
+        public async Task<IActionResult> GetDevicesForGrouping([FromQuery] string groupingName, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            int totalDevices = await _dbContext.Devices.CountAsync();
+            try
+            {
+                ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+                if (user == null)
+                    return Unauthorized("Invalid refresh token");
 
-            // Calculate the number of pages
-            int totalPages = (int)Math.Ceiling((double)totalDevices / pageSize);
+                user = await _dbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
+                Grouping grouping = user.Groupings.FirstOrDefault(x => x.Name.ToLower() == groupingName.ToLower());
 
-            // Get the users for the specified page
-            var devices = await _dbContext.Devices
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+                if (grouping.Devices == null)
+                {
+                    return Ok(new DeviceQueryResponse() { Devices = new List<DeviceDTO>() { }, TotalCount = 0 });
 
-            List<DeviceDTO> deviceDTOs = _mapper.Map<List<Models.Devices.Device>, List<DeviceDTO>>(devices);
+                }
 
+                // Calculate the number of pages
+                int totalPages = (int)Math.Ceiling((double)grouping.Devices.Count / pageSize);
 
-            // Return the paginated results in a JSON object
-            return new DeviceQueryResponse() { Devices = deviceDTOs, TotalCount = totalDevices };
+                // Get the users for the specified page
+                var devices = await _dbContext.Devices
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                List<DeviceDTO> deviceDTOs = _mapper.Map<List<Models.Devices.Device>, List<DeviceDTO>>(devices);
+
+                return Ok(new DeviceQueryResponse() { Devices = deviceDTOs, TotalCount = grouping.Devices.Count });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+          
         }
-
         [HttpGet]
         [Route("GetData")]
         public async Task<IActionResult> GetData()

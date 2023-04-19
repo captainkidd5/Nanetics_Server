@@ -1,4 +1,5 @@
 ﻿using Models.Authentication;
+using Models.Devices;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -21,6 +22,7 @@ namespace Models.GroupingStuff
         public Guid UserId { get; set; }
         public ApplicationUser User { get; set; }
 
+        public List<Device> Devices { get; set; }
 
     }
 

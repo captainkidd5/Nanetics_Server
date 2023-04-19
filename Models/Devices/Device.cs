@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Devices;
 using Models.Authentication;
+using Models.GroupingStuff;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -16,6 +17,7 @@ namespace Models.Devices
     {
         public string Id { get; set; } = string.Empty;
 
+        public string Nickname { get; set; } = string.Empty;
         public ulong HardwareId { get; set; }
         public string X509PrimaryThumbprint { get; set; } = string.Empty;
         /// <summary>
@@ -39,9 +41,9 @@ namespace Models.Devices
 
         public int CloudToDeviceMessageCount { get;  set; }
 
-        [ForeignKey("User")]
-        public Guid UserId { get; set; }
-        public ApplicationUser User { get; set; }
+        [ForeignKey("Grouping")]
+        public string GroupingId{ get; set; }
+        public Grouping Grouping { get; set; }
 
 
     }

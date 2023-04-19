@@ -1,4 +1,5 @@
 ﻿using Contracts.Authentication.Identity.Create;
+using Contracts.GroupingStuff;
 using Microsoft.Azure.Devices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -15,6 +16,7 @@ namespace Contracts.Devices
     public class DeviceDTO
     {
         public string Id { get; set; } = string.Empty;
+        public string Nickname { get; set; } = string.Empty;
 
         public ulong HardwareId { get; set; }
         public string X509PrimaryThumbprint { get; set; } = string.Empty;
@@ -40,7 +42,7 @@ namespace Contracts.Devices
 
         public int CloudToDeviceMessageCount { get; set; }
 
-        public UserDTO User { get; set; }
+        public GroupingDTO Grouping{ get; set; }
     }
     public class PingDTO
     {

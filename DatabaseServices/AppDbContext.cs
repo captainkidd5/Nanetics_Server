@@ -18,7 +18,7 @@ namespace DatabaseServices
         public DbSet<Log> Logs { get; set; }
         public DbSet<Grouping> Groupings { get; set; }
 
-        public DbSet<Device> Devices { get; set; }
+       public DbSet<Device> Devices { get; set; }
 
 
         public AppDbContext(DbContextOptions options) : base(options)
