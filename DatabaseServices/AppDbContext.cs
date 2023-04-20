@@ -1,11 +1,7 @@
-﻿//using DatabaseServices.Seeding.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Models.Authentication;
 using Models.Phones;
-using Models.Logging;
-//using Services.Seeding.Identity;
-using Services.Seeding.Logging;
 using Models.Devices;
 using Models.GroupingStuff;
 
@@ -15,7 +11,6 @@ namespace DatabaseServices
     {
         public DbSet<ApplicationUser> ApplicationUser{ get; set; }
         public DbSet<ApplicationRole> ApplicationRole { get; set; }
-        public DbSet<Log> Logs { get; set; }
         public DbSet<Grouping> Groupings { get; set; }
 
        public DbSet<Device> Devices { get; set; }

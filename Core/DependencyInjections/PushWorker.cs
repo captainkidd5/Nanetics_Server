@@ -6,9 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Models.Authentication;
 using Models.Phones;
-using Models.Logging;
 using NodaTime.TimeZones;
-using Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,13 +17,11 @@ namespace Core.DependencyInjections
 {
     public class PushWorker : BackgroundService
     {
-        private readonly ILogger<LoggerWorker> _logger;
         private readonly IServiceScopeFactory serviceProvider;
 
         private PushApiClient _pushApiClient;
-        public PushWorker(ILogger<LoggerWorker> logger, IServiceScopeFactory serviceProvider)
+        public PushWorker(IServiceScopeFactory serviceProvider)
         {
-            _logger = logger;
             this.serviceProvider = serviceProvider;
             _pushApiClient = new PushApiClient();
         }

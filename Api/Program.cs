@@ -101,7 +101,7 @@ try
 
     Serilog.Log.Logger = new LoggerConfiguration().MinimumLevel.Information()
         .Enrich.WithProperty("Application", "Nanetics")
-        .WriteTo.Seq("http://localhost:5341")
+        .WriteTo.Seq("https://naneticsseq.azurewebsites.net:443")
     .CreateLogger();
 
     LoggerFactory loggerFactory = new LoggerFactory();
@@ -115,7 +115,6 @@ try
     builder.Host.UseSerilog();
     builder.Services.AddSingleton<IMQTTService, MQTTService>();
 
-    builder.Services.AddHostedService<LoggerWorker>();
     builder.Services.AddHostedService<PushWorker>();
     //builder.Services.AddHostedService<MQTTWorker>();
 

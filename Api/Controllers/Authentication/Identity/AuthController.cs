@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
 using Models.Authentication;
-using Services;
 using System.Security.Claims;
 using Api.DependencyInjections.Authentication;
 using DatabaseServices;

@@ -4,12 +4,10 @@ using Contracts.Authentication.Identity.Create;
 using Contracts.Authentication.Identity.Roles;
 using Contracts.Devices;
 using Contracts.GroupingStuff;
-using Contracts.Logging;
 using Contracts.Media;
 using Models.Authentication;
 using Models.Devices;
 using Models.GroupingStuff;
-using Models.Logging;
 namespace Models
 {
 
@@ -29,7 +27,6 @@ namespace Models
             CreateMap<ApplicationUser, UserDTO>().ReverseMap();
             CreateMap<ApplicationRole, RoleDTO>().ReverseMap();
 
-            CreateMap<Log, LogDTO>().ReverseMap();
 
             CreateMap<ApplicationUser, CreateUserDTO>().ReverseMap();
 
