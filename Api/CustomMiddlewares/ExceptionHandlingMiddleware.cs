@@ -1,4 +1,6 @@
-﻿using Contracts.Errors;
+﻿using Contracts.Authentication.Identity.Create;
+using Contracts.Errors;
+using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Text.Json;
 
@@ -23,6 +25,7 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
+           
             await HandleExceptionAsync(httpContext, ex);
         }
     }
@@ -53,7 +56,10 @@ public class ExceptionHandlingMiddleware
                 errorResponse.Message = "Internal server error!";
                 break;
         }
-        _logger.LogError(exception.Message);
+        _logger.LogError("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Exception: {exception}",
+        context.GetEndpoint(),
+                       context.Request.Method,
+                       exception);
         var result = JsonSerializer.Serialize(errorResponse);
         await context.Response.WriteAsync(result);
     }

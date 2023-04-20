@@ -182,12 +182,17 @@ namespace Api.Controllers.Authentication.Identity
             }
 
         }
-        
+
 
         [HttpPost()]
         [Route("confirmEmail")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string email, [FromQuery] string code)
         {
+
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Confirm email on database attempt for {email}",
+               HttpContext.GetEndpoint(),
+                        HttpContext.Request.Method,
+                        email);
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
@@ -198,6 +203,11 @@ namespace Api.Controllers.Authentication.Identity
             {
                 user.EmailConfirmed = true;
                 await _userManager.UpdateAsync(user);
+
+                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Confirm email on database SUCCESS for {email}",
+                   HttpContext.GetEndpoint(),
+                            HttpContext.Request.Method,
+                            email);
                 return Ok();
 
             }
@@ -215,8 +225,11 @@ namespace Api.Controllers.Authentication.Identity
         }
         private async Task<IActionResult> SendConfirmationEmail(LoginUserDTO userDTO, ApplicationUser user)
         {
-            try
-            {
+           
+                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Confirmation Email send attempt for {email}",
+                      HttpContext.GetEndpoint(),
+                               HttpContext.Request.Method,
+                               user.Email);
                 var code = GenerateConfirmationCode();
 
                 user.ConfirmationCode = code;
@@ -229,28 +242,29 @@ namespace Api.Controllers.Authentication.Identity
 
                 if (emailResult.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation($"Confirmation email sent to {user.Email}", null);
-                    return Accepted(userDTO);
+                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Confirmation Email send SUCCESS for {email}",
+                  HttpContext.GetEndpoint(),
+                           HttpContext.Request.Method,
+                           user.Email);
+                return Accepted(userDTO);
 
                 }
 
                 return BadRequest(emailResult.StatusCode);
 
-            }
-            catch (Exception e)
-            {
-                _logger.LogInformation($"Unable to send confirmation email to {user.Email}", null);
-
-                return BadRequest(e.ToString());
-            }
-
+            
+       
 
         }
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserDTO loginUserDTO)
         {
-            _logger.LogWarning($"Login attempt for {loginUserDTO.Email}");
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Login attempt for login user {email}",
+                   HttpContext.GetEndpoint(),
+                            HttpContext.Request.Method,
+                            loginUserDTO.Email);
+
 
             if (!ModelState.IsValid)
             {
@@ -281,7 +295,10 @@ namespace Api.Controllers.Authentication.Identity
                         HttpOnly = true,
                         IsEssential = true
                     });
-
+                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Login SUCCESS for login user {email}",
+                       HttpContext.GetEndpoint(),
+                                HttpContext.Request.Method,
+                                loginUserDTO.Email);
                 return Accepted(new { Token = await _authManager.CreateToken(user, false) });
             }
             catch (Exception e)

@@ -35,14 +35,16 @@ namespace Api.Controllers.Devices
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly ILogger<Device> _logger;
         private readonly IAuthManager _authManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDeviceRegistryService _deviceRegistryService;
 
-        public DevicesController(AppDbContext dbContext,IMapper mapper, IAuthManager authManager, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
+        public DevicesController(AppDbContext dbContext,IMapper mapper,ILogger<Device> logger, IAuthManager authManager, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _logger = logger;
             _authManager = authManager;
             _userManager = userManager;
             _deviceRegistryService = deviceRegistryService;
@@ -63,43 +65,45 @@ namespace Api.Controllers.Devices
         /// register the device in IoT and in db (without owner)
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("RegistrationRequest")]
         public async Task<IActionResult> RegistrationRequest([FromBody] DeviceRegistryRequest registryRequest)
         {
             try
             {
-                ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
-                if (user == null)
-                    return Unauthorized("Invalid refresh token");
+                //ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+                //if (user == null)
+                //    return Unauthorized("Invalid refresh token");
 
-
-                if (_dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == registryRequest.DeviceHardWareId) != null)
+                var devices = await _dbContext.Devices.ToListAsync();
+                if (await _dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == registryRequest.DeviceHardWareId) != null)
                     throw new Exception($"Device with hardware id {registryRequest.DeviceHardWareId} already exists in database");
 
                 Microsoft.Azure.Devices.Device device = await _deviceRegistryService.CreateAndRegisterDevice(registryRequest);
-                string assignedId = Guid.NewGuid().ToString();
                 DeviceRegistryResponse response = new DeviceRegistryResponse() {
-                    AssignedId = assignedId,
+                    AssignedId = device.Id,
                     X509Thumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint
                 };
                 
                 Models.Devices.Device modelDevice = new Models.Devices.Device()
                 {
-                    Id = assignedId,
+                    Id = device.Id,
+                    GroupingId = "888d2c00-661e-490f-847e-734d6805029d",
                     HardwareId = registryRequest.DeviceHardWareId,
                     X509PrimaryThumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint,
                     GenerationId = 1,
-                    ETag = Guid.NewGuid().ToString().Substring(0, 8),
+                    ETag = device.ETag,
                     ConnectionState = DeviceConnectionState.Disconnected,
                     Status = DeviceStatus.Disabled,
-                    CloudToDeviceMessageCount = 1
-
+                    CloudToDeviceMessageCount = 1,
+                 
                 };
           
 
                 await _dbContext.Devices.AddAsync(modelDevice);
                 await _dbContext.SaveChangesAsync();
+
+                _logger.LogCritical("Created and registered device: ", modelDevice);
                 return Ok(response);
             }
             catch (Exception e)
