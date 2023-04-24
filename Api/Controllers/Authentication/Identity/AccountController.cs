@@ -55,9 +55,12 @@ namespace Api.Controllers.Authentication.Identity
         [Route("createAccount")]
         public async Task<IActionResult> Register([FromBody] CreateUserDTO userDTO)
         {
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Admin register ATTEMPT for email {email}",
+                  HttpContext.GetEndpoint(),
+                           HttpContext.Request.Method,
+                           userDTO.Email);
             userDTO.Email = userDTO.Email.ToLower();
 
-            _logger.LogInformation($"Registration attempt for {userDTO.Email}");
 
             //ModelState refers to the data attributes above model properties
             if (!ModelState.IsValid)
@@ -68,7 +71,13 @@ namespace Api.Controllers.Authentication.Identity
             ApplicationUser usr = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email.Equals(userDTO.Email));
             if (usr != null && usr.EmailConfirmed)
             {
-                return BadRequest($"Email already in use.{userDTO.Email}");
+                string errMsg = $"Email already in use.{userDTO.Email}";
+                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Admin register FAILURE for email {email}" +
+                    " : " + errMsg,
+                 HttpContext.GetEndpoint(),
+                          HttpContext.Request.Method,
+                          userDTO.Email);
+                return BadRequest(errMsg);
             }
 
             ApplicationUser user = _mapper.Map<ApplicationUser>(userDTO);
@@ -83,20 +92,15 @@ namespace Api.Controllers.Authentication.Identity
             user.Groupings = new List<Grouping>();
             var result = await _userManager.CreateAsync(user, userDTO.Password);
 
-            if (!result.Succeeded)
-            {
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(error.Code, error.Description);
-                }
-                return BadRequest(ModelState);
-            }
 
             await _userManager.AddToRolesAsync(user, new List<string>()
                 {
                     "User"
                 });
-
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Admin register SUCCESS for email {email}",
+             HttpContext.GetEndpoint(),
+                      HttpContext.Request.Method,
+                      userDTO.Email);
 
             return Ok();
 
@@ -117,11 +121,11 @@ namespace Api.Controllers.Authentication.Identity
         [Route("update")]
         public async Task<IActionResult> Update([FromBody] UpdateUserDTO userDTO)
         {
-            if (!ModelState.IsValid)
-                return BadRequest();
 
-            _logger.LogInformation($"Update attempt for {userDTO.Email}");
-
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Admin update ATTEMPT for user {email}",
+             HttpContext.GetEndpoint(),
+                      HttpContext.Request.Method,
+                      userDTO.Email);
             ApplicationUser user = _userManager.Users.FirstOrDefault(x => x.Id == userDTO.Id);
 
             if (user == null)
@@ -142,13 +146,13 @@ namespace Api.Controllers.Authentication.Identity
 
             if (!result.Succeeded)
             {
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(error.Code, error.Description);
-                }
+
                 return BadRequest(ModelState);
             }
-
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Admin update SUCCESS for user {email}",
+             HttpContext.GetEndpoint(),
+                      HttpContext.Request.Method,
+                      userDTO.Email);
             return Accepted(userDTO);
 
 
@@ -165,23 +169,29 @@ namespace Api.Controllers.Authentication.Identity
         [Route("delete")]
         public async Task<IActionResult> Delete([FromBody] DeleteUserDTO userDTO)
         {
-
-            _logger.LogInformation($"Deletion attempt for {userDTO.Email}");
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Admin role deletetion ATTEMPT for user {email}",
+         HttpContext.GetEndpoint(),
+                  HttpContext.Request.Method,
+                  userDTO.Email);
             if (userDTO.Email.Equals("waiikipomm@gmail.com", StringComparison.InvariantCultureIgnoreCase))
                 return BadRequest(ModelState);
             var user = _userManager.Users.FirstOrDefault(x => x.Email.Equals(userDTO.Email.ToLower()));
 
-            if (user == null) return BadRequest(ModelState);
 
 
             IdentityResult result = await _userManager.DeleteAsync(user);
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Admin role deletion SUCCESS for user {email}",
+         HttpContext.GetEndpoint(),
+                  HttpContext.Request.Method,
+                  userDTO.Email);
             if (result.Succeeded)
-                return Ok(userDTO);
+            {
+
+            }
 
 
+            return Ok(userDTO);
 
-
-            return BadRequest(userDTO);
         }
 
         [Authorize(Roles = "Admin")]
@@ -190,7 +200,12 @@ namespace Api.Controllers.Authentication.Identity
         [Route("users")]
         public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
+            ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
 
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Get Users ATTEMPT BY user {email}",
+HttpContext.GetEndpoint(),
+         HttpContext.Request.Method,
+         user.Email);
             // Get the total number of users
             int totalUsers = await _userManager.Users.CountAsync();
 
@@ -205,7 +220,7 @@ namespace Api.Controllers.Authentication.Identity
 
             List<UserDTO> userDTOs = _mapper.Map<List<ApplicationUser>, List<UserDTO>>(users);
 
-          
+
             // Return the paginated results in a JSON object
             return Ok(new UsersQueryResponse() { Users = userDTOs, TotalCount = totalUsers });
 
@@ -217,12 +232,26 @@ namespace Api.Controllers.Authentication.Identity
         [Route("getRoles")]
         public async Task<IActionResult> GetRoles([FromQuery] string email)
         {
+            ApplicationUser caller = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Get Roles ATTEMPT FOR user {email} " +
+                "BY caller {Caller}",
+HttpContext.GetEndpoint(),
+        HttpContext.Request.Method,
+        email, caller.Email);
+
             ApplicationUser user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.Equals(email));
+
             if (user == null)
                 return BadRequest();
 
             IList<string> roles = await _userManager.GetRolesAsync(user);
             var usersInRole = await _userManager.GetUsersInRoleAsync("User");
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Get Roles SUCCESS FOR user {email} " +
+           "BY caller {Caller}",
+HttpContext.GetEndpoint(),
+   HttpContext.Request.Method,
+   email, caller.Email);
             return Ok(roles);
 
         }
@@ -233,8 +262,6 @@ namespace Api.Controllers.Authentication.Identity
         public async Task<IActionResult> AddToRole([FromQuery] string email, [FromQuery] string roleName)
         {
             ApplicationUser user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.Equals(email));
-            if (user == null)
-                return BadRequest();
 
             IList<string> roles = await _userManager.GetRolesAsync(user);
             if (roles.Contains(roleName))

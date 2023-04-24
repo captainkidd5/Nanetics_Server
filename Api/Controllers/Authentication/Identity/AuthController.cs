@@ -51,18 +51,12 @@ namespace Api.Controllers.Authentication.Identity
         public async Task<IActionResult> Register([FromBody] LoginUserDTO loginUserDTO)
         {
 
-            _logger.LogInformation($"Registration attempt for {loginUserDTO.Email}");
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Registration on database ATTEMPT for {email}",
+                   HttpContext.GetEndpoint(),
+                            HttpContext.Request.Method,
+                            loginUserDTO.Email);
 
-            //ModelState refers to the data attributes above model properties
-            if (!ModelState.IsValid)
-            {
-                _logger.LogError("Registration: bad modelstate");
-
-                return BadRequest();
-            }
-            try
-            {
-                ApplicationUser usr = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email.Equals(loginUserDTO.Email));
+            ApplicationUser usr = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email.Equals(loginUserDTO.Email));
                 if (usr != null && usr.EmailConfirmed)
                 {
                     _logger.LogError("Email already in use", usr.Email);
@@ -101,17 +95,22 @@ namespace Api.Controllers.Authentication.Identity
                 {
                     "User"
                 });
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Registration on database SUCCESS for {email}," +
+                "Email confirmation sent",
+                 HttpContext.GetEndpoint(),
+                          HttpContext.Request.Method,
+                          loginUserDTO.Email);
 
-                return await SendConfirmationEmail(loginUserDTO, user);
+            IActionResult res = await SendConfirmationEmail(loginUserDTO, user);
+            UserDTO dto = res as UserDTO;
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Registration on database SUCCESS for {email}," +
+                "email sent.",
+                HttpContext.GetEndpoint(),
+                         HttpContext.Request.Method,
+                         loginUserDTO.Email);
+            return Ok(dto);
 
-            }
-            catch (Exception e)
-            {
-                string errorMsg = $"Something went wrong in the {nameof(Register)}";
-                _logger.LogError(e, errorMsg);
-
-                return Problem(e.ToString(), statusCode: 500);
-            }
+ 
 
         }
 
@@ -123,14 +122,11 @@ namespace Api.Controllers.Authentication.Identity
         [Route("deleteAccount")]
         public async Task<IActionResult> DeleteAccount([FromBody] LoginUserDTO loginUserDTO)
         {
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            try
-            {
-                if (!await _authManager.ValidateUser(loginUserDTO))
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Delete Account on database ATTEMPT for {email}",
+               HttpContext.GetEndpoint(),
+                        HttpContext.Request.Method,
+                        loginUserDTO.Email);
+            if (!await _authManager.ValidateUser(loginUserDTO))
                 {
                     return BadRequest();
                 }
@@ -168,17 +164,12 @@ namespace Api.Controllers.Authentication.Identity
                 }
 
 
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Delete Account on database SUCCESS for {email}",
+     HttpContext.GetEndpoint(),
+              HttpContext.Request.Method,
+              loginUserDTO.Email);
+            return Ok();
 
-                return Ok();
-
-            }
-            catch (Exception e)
-            {
-                string errorMsg = $"Something went wrong in the {nameof(DeleteAccount)}";
-                _logger.LogError(e, errorMsg);
-
-                return Problem(e.ToString(), statusCode: 500);
-            }
 
         }
 
@@ -224,11 +215,13 @@ namespace Api.Controllers.Authentication.Identity
         }
         private async Task<IActionResult> SendConfirmationEmail(LoginUserDTO userDTO, ApplicationUser user)
         {
-           
-                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Confirmation Email send attempt for {email}",
+                ApplicationUser caller = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Confirmation Email send ATTEMPT for {email}" +
+                " BY caller {caller}",
                       HttpContext.GetEndpoint(),
                                HttpContext.Request.Method,
-                               user.Email);
+                               user.Email, caller.Email);
                 var code = GenerateConfirmationCode();
 
                 user.ConfirmationCode = code;
@@ -241,10 +234,11 @@ namespace Api.Controllers.Authentication.Identity
 
                 if (emailResult.IsSuccessStatusCode)
                 {
-                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Confirmation Email send SUCCESS for {email}",
+                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Confirmation Email send SUCCESS for {email} " +
+                    " BY caller {caller}",
                   HttpContext.GetEndpoint(),
                            HttpContext.Request.Method,
-                           user.Email);
+                           user.Email,caller.Email);
                 return Accepted(userDTO);
 
                 }
@@ -259,7 +253,7 @@ namespace Api.Controllers.Authentication.Identity
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginUserDTO loginUserDTO)
         {
-            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Login attempt for login user {email}",
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Login ATTEMPT for login user {email}",
                    HttpContext.GetEndpoint(),
                             HttpContext.Request.Method,
                             loginUserDTO.Email);

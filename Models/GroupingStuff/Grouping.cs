@@ -18,8 +18,6 @@ namespace Models.GroupingStuff
         public string BannerImagePath { get; set; }
 
 
-        [ForeignKey("User")]
-        public Guid UserId { get; set; }
         public ApplicationUser User { get; set; }
 
         public List<Device> Devices { get; set; }

@@ -44,39 +44,24 @@ namespace Api.Controllers.Authentication.Identity
         public async Task<IActionResult> ForgotPassword([FromQuery] string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
+
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+
+            var emailResult = await _emailSender.SendPasswordResetEmail(user.Email, user.Id.ToString(), token);
+
+            if (emailResult.IsSuccessStatusCode)
             {
-                return NotFound($"Unable to load user with email '{email}'.");
-            }
-            try
-            {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-
-
-
-
-                var emailResult = await _emailSender.SendPasswordResetEmail(user.Email, user.Id.ToString(), token);
-
-                if (emailResult.IsSuccessStatusCode)
-                {
-                    _logger.LogInformation($"Password reset email sent to {user.Email}", null);
-                    return Accepted();
-
-                }
-
-                return BadRequest(emailResult.StatusCode);
+                _logger.LogInformation($"Password reset email sent to {user.Email}", null);
+                return Accepted();
 
             }
-            catch (Exception e)
-            {
-                _logger.LogInformation($"Unable to send password reset email to {user.Email}", null);
 
-                return BadRequest(e.ToString());
-            }
+            return BadRequest(emailResult.StatusCode);
 
 
-            return BadRequest("Unable to verify email.");
+
         }
 
         [HttpPost()]

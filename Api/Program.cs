@@ -92,7 +92,7 @@ try
     SecretClient secretClient = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
 
     //var secret = secretClient.GetSecret("GooglePlacesAPIKey");
-    string dbSecret = secretClient.GetSecret("ConnectionStrings--switchcountdb").Value.Value;
+    string dbSecret = secretClient.GetSecret("cs--naneticsdb").Value.Value;
     builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbSecret));
 
     //Serilog.Log.Logger = new LoggerConfiguration()

@@ -22,7 +22,7 @@ namespace Models.Authentication
 
         public List<Grouping> Groupings { get; set; }
 
-        //public List<Device> Devices { get; set; }
+        public List<Device> Devices { get; set; }
 
 
     }

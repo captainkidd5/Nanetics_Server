@@ -69,15 +69,28 @@ namespace Api.Controllers.Devices
         [Route("RegistrationRequest")]
         public async Task<IActionResult> RegistrationRequest([FromBody] DeviceRegistryRequest registryRequest)
         {
-            try
-            {
-                //ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
-                //if (user == null)
-                //    return Unauthorized("Invalid refresh token");
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Device Registration on database ATTEMPT for" +
+                " device with hardware id: {DeviceId}",
+                       HttpContext.GetEndpoint(),
+                                HttpContext.Request.Method,
+                                registryRequest.DeviceHardWareId);
 
-                var devices = await _dbContext.Devices.ToListAsync();
+            //ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+            //if (user == null)
+            //    return Unauthorized("Invalid refresh token");
+
+            var devices = await _dbContext.Devices.ToListAsync();
                 if (await _dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == registryRequest.DeviceHardWareId) != null)
-                    throw new Exception($"Device with hardware id {registryRequest.DeviceHardWareId} already exists in database");
+            {
+                string erMsg = $"Device with hardware id {registryRequest.DeviceHardWareId} already exists in database";
+                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Device Registration on database FAILURE for" +
+                erMsg,
+                        HttpContext.GetEndpoint(),
+                                 HttpContext.Request.Method,
+                                 registryRequest.DeviceHardWareId);
+
+                return BadRequest(erMsg);
+            }
 
                 Microsoft.Azure.Devices.Device device = await _deviceRegistryService.CreateAndRegisterDevice(registryRequest);
                 DeviceRegistryResponse response = new DeviceRegistryResponse() {
@@ -88,7 +101,7 @@ namespace Api.Controllers.Devices
                 Models.Devices.Device modelDevice = new Models.Devices.Device()
                 {
                     Id = device.Id,
-                    GroupingId = "888d2c00-661e-490f-847e-734d6805029d",
+                    //GroupingId = "888d2c00-661e-490f-847e-734d6805029d",
                     HardwareId = registryRequest.DeviceHardWareId,
                     X509PrimaryThumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint,
                     GenerationId = 1,
@@ -103,13 +116,14 @@ namespace Api.Controllers.Devices
                 await _dbContext.Devices.AddAsync(modelDevice);
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogCritical("Created and registered device: ", modelDevice);
-                return Ok(response);
-            }
-            catch (Exception e)
-            {
-                return BadRequest();
-            }
+
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Device Registration on database SUCCESS for" +
+              " device with hardware id: {DeviceId}",
+                     HttpContext.GetEndpoint(),
+                              HttpContext.Request.Method,
+                              registryRequest.DeviceHardWareId);
+            return Ok(response);
+
 
         }
 

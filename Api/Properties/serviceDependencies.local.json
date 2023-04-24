@@ -7,12 +7,6 @@
       "connectionId": "VaultUri",
       "dynamicId": null
     },
-    "mssql2": {
-      "secretStore": "AzureKeyVault",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/waiikiapidbserver/databases/switchcountdb",
-      "type": "mssql.azure",
-      "connectionId": "ConnectionStrings:switchcountdb"
-    },
     "mssql1": {
       "ignored": "true",
       "type": "mssql",

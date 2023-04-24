@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatabaseServices.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230302055203_add_rotationmember_change_fk")]
-    partial class addrotationmemberchangefk
+    [Migration("20230424011934__init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,21 +24,6 @@ namespace DatabaseServices.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("BusinessRotation", b =>
-                {
-                    b.Property<string>("ActiveRotationsId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("BusinessesId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("ActiveRotationsId", "BusinessesId");
-
-                    b.HasIndex("BusinessesId");
-
-                    b.ToTable("BusinessRotation");
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
@@ -253,7 +238,63 @@ namespace DatabaseServices.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Models.BusinessStuff.Business", b =>
+            modelBuilder.Entity("Models.Devices.Device", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("CloudToDeviceMessageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ConnectionState")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ConnectionStateUpdatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ETag")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GenerationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GroupingId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("HardwareId")
+                        .HasColumnType("decimal(20,0)");
+
+                    b.Property<DateTime>("LastActivityTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nickname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StatusUpdatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("X509PrimaryThumbprint")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Devices");
+                });
+
+            modelBuilder.Entity("Models.GroupingStuff.Grouping", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -277,159 +318,7 @@ namespace DatabaseServices.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Businesses");
-                });
-
-            modelBuilder.Entity("Models.BusinessStuff.Rotation", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nickname")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Rotations");
-                });
-
-            modelBuilder.Entity("Models.BusinessStuff.RotationMember", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("BusinessId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Consented")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("RotationId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RotationId");
-
-                    b.ToTable("RotationMembers");
-                });
-
-            modelBuilder.Entity("Models.Devices.Device", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("ApplicationUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ExpoPushToken")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TimeZone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.ToTable("Device");
-                });
-
-            modelBuilder.Entity("Models.Logging.Log", b =>
-                {
-                    b.Property<int?>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("Id"));
-
-                    b.Property<string>("Exception")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Level")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MessageTemplate")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Properties")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("TimeStamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Logs");
-                });
-
-            modelBuilder.Entity("Models.Tickets.Ticket", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("Expires")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ExpiresAfterUses")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IssuedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastUsedAtBusinessId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RotationId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Uses")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RotationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Tickets");
-                });
-
-            modelBuilder.Entity("BusinessRotation", b =>
-                {
-                    b.HasOne("Models.BusinessStuff.Rotation", null)
-                        .WithMany()
-                        .HasForeignKey("ActiveRotationsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Models.BusinessStuff.Business", null)
-                        .WithMany()
-                        .HasForeignKey("BusinessesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.ToTable("Groupings");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -483,70 +372,44 @@ namespace DatabaseServices.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Models.BusinessStuff.Business", b =>
+            modelBuilder.Entity("Models.Devices.Device", b =>
                 {
+                    b.HasOne("Models.GroupingStuff.Grouping", "Grouping")
+                        .WithMany("Devices")
+                        .HasForeignKey("GroupingId");
+
                     b.HasOne("Models.Authentication.ApplicationUser", "User")
-                        .WithMany("Businesses")
+                        .WithMany("Devices")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Grouping");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Models.BusinessStuff.RotationMember", b =>
+            modelBuilder.Entity("Models.GroupingStuff.Grouping", b =>
                 {
-                    b.HasOne("Models.BusinessStuff.Rotation", "Rotation")
-                        .WithMany()
-                        .HasForeignKey("RotationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Rotation");
-                });
-
-            modelBuilder.Entity("Models.Devices.Device", b =>
-                {
-                    b.HasOne("Models.Authentication.ApplicationUser", "ApplicationUser")
-                        .WithMany("Devices")
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ApplicationUser");
-                });
-
-            modelBuilder.Entity("Models.Tickets.Ticket", b =>
-                {
-                    b.HasOne("Models.BusinessStuff.Rotation", "Rotation")
-                        .WithMany("Tickets")
-                        .HasForeignKey("RotationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Models.Authentication.ApplicationUser", "User")
-                        .WithMany("Tickets")
+                        .WithMany("Groupings")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Rotation");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Models.Authentication.ApplicationUser", b =>
                 {
-                    b.Navigation("Businesses");
-
                     b.Navigation("Devices");
 
-                    b.Navigation("Tickets");
+                    b.Navigation("Groupings");
                 });
 
-            modelBuilder.Entity("Models.BusinessStuff.Rotation", b =>
+            modelBuilder.Entity("Models.GroupingStuff.Grouping", b =>
                 {
-                    b.Navigation("Tickets");
+                    b.Navigation("Devices");
                 });
 #pragma warning restore 612, 618
         }

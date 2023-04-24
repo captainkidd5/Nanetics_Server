@@ -1,4 +1,5 @@
-﻿using Contracts.GroupingStuff;
+﻿using Contracts.Devices;
+using Contracts.GroupingStuff;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -55,6 +56,8 @@ namespace Contracts.Authentication.Identity.Create
         public ICollection<string> Roles { get; set; }
 
         public ICollection<GroupingDTO> Groupings { get; set; }
+        public ICollection<DeviceDTO> Devices { get; set; }
+
 
     }
 

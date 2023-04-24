@@ -15,6 +15,7 @@ using Api.DependencyInjections.Authentication;
 using Api.DependencyInjections.S3;
 using Contracts.GroupingStuff;
 using Models.GroupingStuff;
+using Contracts.Authentication.Identity.Create;
 
 namespace Api.Controllers.groupings
 {
@@ -26,16 +27,18 @@ namespace Api.Controllers.groupings
         private readonly AppDbContext _appDbContext;
         private readonly IAuthManager _authManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<GroupingController> _logger;
         private readonly IMapper _iMapper;
         private readonly IConfiguration _configuration;
         private readonly IS3Helper _s3Helper;
 
         public GroupingController(AppDbContext appDbContext, IAuthManager authManager,
-            UserManager<ApplicationUser> userManager, IMapper iMapper, IConfiguration configuration, IS3Helper s3Helper)
+            UserManager<ApplicationUser> userManager, ILogger<GroupingController> logger, IMapper iMapper, IConfiguration configuration, IS3Helper s3Helper)
         {
             _appDbContext = appDbContext;
             _authManager = authManager;
             _userManager = userManager;
+            _logger = logger;
             _iMapper = iMapper;
             _configuration = configuration;
             _s3Helper = s3Helper;
@@ -62,6 +65,13 @@ namespace Api.Controllers.groupings
             if (user == null)
                 return Unauthorized("Invalid refresh token");
 
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Create grouping on database ATTEMPT for " +
+                "grouping name {GroupingName} BY {User}",
+            HttpContext.GetEndpoint(),
+                     HttpContext.Request.Method,
+                     groupingRegistrationRequest.Name,
+                     user.Email);
+
             user = await _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -81,14 +91,17 @@ namespace Api.Controllers.groupings
 
             grouping.Id = Guid.NewGuid().ToString();
             grouping.User = user;
-            grouping.UserId = user.Id;
+          //  grouping.UserId = user.Id;
             grouping.BannerImagePath = string.Empty;
             user.Groupings.Add(grouping);
             await _userManager.UpdateAsync(user);
 
-            //var result = await _appDbContext.groupings.AddAsync(grouping);
-            // await _appDbContext.SaveChangesAsync();
-
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Create grouping on database SUCCESS for " +
+              "grouping name {GroupingName} BY {User}",
+          HttpContext.GetEndpoint(),
+                   HttpContext.Request.Method,
+                   groupingRegistrationRequest.Name,
+                   user.Email);
             return Ok();
 
 
@@ -102,7 +115,12 @@ namespace Api.Controllers.groupings
             ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
             if (user == null)
                 return Unauthorized("Invalid refresh token");
-
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Update grouping on database ATTEMPT for " +
+          "grouping name {GroupingName} BY {User}",
+      HttpContext.GetEndpoint(),
+               HttpContext.Request.Method,
+               groupingUpdateRequest.Name,
+               user.Email);
             user = await _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
 
             if (!ModelState.IsValid)
@@ -122,7 +140,12 @@ namespace Api.Controllers.groupings
 
             _appDbContext.Update(user);
             var result = await _appDbContext.SaveChangesAsync();
-
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Update grouping on database SUCCESS for " +
+         "grouping name {GroupingName} BY {User}",
+     HttpContext.GetEndpoint(),
+              HttpContext.Request.Method,
+              groupingUpdateRequest.Name,
+              user.Email);
             return Ok(result);
 
         }
@@ -135,6 +158,13 @@ namespace Api.Controllers.groupings
             ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
             if (user == null)
                 return Unauthorized("Invalid refresh token");
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Get Groupings for user on database ATTEMPT for " +
+         " userId {UserId} BY {User}",
+     HttpContext.GetEndpoint(),
+              HttpContext.Request.Method,
+              userId,
+              user.Email);
+
 
             List<Grouping> groupings = _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id.ToString() == userId).Result.Groupings;
 
@@ -150,10 +180,22 @@ namespace Api.Controllers.groupings
             ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
             if (user == null)
                 return Unauthorized("Invalid refresh token");
-
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Get Groupings for user on database ATTEMPT for " +
+         " userId {UserId} BY {User}",
+     HttpContext.GetEndpoint(),
+              HttpContext.Request.Method,
+              user.Email,
+              user.Email);
             var usr = await _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
             var groupings = usr.Groupings;
             List<GroupingDTO> groupingDTOs = _iMapper.Map<List<Grouping>, List<GroupingDTO>>(groupings);
+
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Get Groupings for user on database SUCCESS for " +
+        " userId {UserId} BY {User}",
+    HttpContext.GetEndpoint(),
+             HttpContext.Request.Method,
+             user.Email,
+             user.Email);
             return Ok(groupingDTOs);
 
 
@@ -171,7 +213,12 @@ namespace Api.Controllers.groupings
             ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
             if (user == null)
                 return Unauthorized("Invalid refresh token");
-
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Delete grouping on database ATTEMPT for " +
+         "grouping id {GroupingId} BY {User}",
+     HttpContext.GetEndpoint(),
+              HttpContext.Request.Method,
+             groupingId,
+              user.Email);
             List<Grouping> groupings = _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id).Result.Groupings;
 
             Grouping grouping = groupings.FirstOrDefault(x => x.Id == groupingId);
@@ -182,7 +229,12 @@ namespace Api.Controllers.groupings
                 return BadRequest("Must be owner of grouping to delete it.");
             _appDbContext.Groupings.Remove(grouping);
             var result = await _appDbContext.SaveChangesAsync();
-
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Delete grouping on database SUCCESS for " +
+      "grouping id {GroupingId} BY {User}",
+  HttpContext.GetEndpoint(),
+           HttpContext.Request.Method,
+          groupingId,
+           user.Email);
             return Ok(result);
         }
 

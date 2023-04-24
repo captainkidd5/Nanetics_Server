@@ -55,24 +55,6 @@ namespace DatabaseServices.Migrations
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 });
 
-            //migrationBuilder.CreateTable(
-            //    name: "Logs",
-            //    columns: table => new
-            //    {
-            //        Id = table.Column<int>(type: "int", nullable: false)
-            //            .Annotation("SqlServer:Identity", "1, 1"),
-            //        Message = table.Column<string>(type: "nvarchar(max)", nullable: true),
-            //        MessageTemplate = table.Column<string>(type: "nvarchar(max)", nullable: true),
-            //        Level = table.Column<string>(type: "nvarchar(max)", nullable: true),
-            //        TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-            //        Exception = table.Column<string>(type: "nvarchar(max)", nullable: true),
-            //        Properties = table.Column<string>(type: "nvarchar(max)", nullable: true)
-            //    },
-            //    constraints: table =>
-            //    {
-            //        table.PrimaryKey("PK_Logs", x => x.Id);
-            //    });
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
@@ -180,46 +162,59 @@ namespace DatabaseServices.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Businesses",
+                name: "Groupings",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BannerImagePath = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Businesses", x => x.Id);
+                    table.PrimaryKey("PK_Groupings", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Businesses_AspNetUsers_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_Groupings_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Device",
+                name: "Devices",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ExpoPushToken = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TimeZone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ApplicationUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Nickname = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    HardwareId = table.Column<decimal>(type: "decimal(20,0)", nullable: false),
+                    X509PrimaryThumbprint = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    GenerationId = table.Column<int>(type: "int", nullable: false),
+                    ETag = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ConnectionState = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    ConnectionStateUpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StatusUpdatedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastActivityTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CloudToDeviceMessageCount = table.Column<int>(type: "int", nullable: false),
+                    GroupingId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Device", x => x.Id);
+                    table.PrimaryKey("PK_Devices", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Device_AspNetUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
+                        name: "FK_Devices_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Devices_Groupings_GroupingId",
+                        column: x => x.GroupingId,
+                        principalTable: "Groupings",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -262,14 +257,19 @@ namespace DatabaseServices.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Businesses_UserId1",
-                table: "Businesses",
-                column: "UserId1");
+                name: "IX_Devices_GroupingId",
+                table: "Devices",
+                column: "GroupingId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Device_ApplicationUserId",
-                table: "Device",
-                column: "ApplicationUserId");
+                name: "IX_Devices_UserId",
+                table: "Devices",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Groupings_UserId",
+                table: "Groupings",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -291,16 +291,13 @@ namespace DatabaseServices.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Businesses");
-
-            migrationBuilder.DropTable(
-                name: "Device");
-
-            migrationBuilder.DropTable(
-                name: "Logs");
+                name: "Devices");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Groupings");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

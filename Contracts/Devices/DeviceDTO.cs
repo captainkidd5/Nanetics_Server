@@ -43,6 +43,8 @@ namespace Contracts.Devices
         public int CloudToDeviceMessageCount { get; set; }
 
         public GroupingDTO Grouping{ get; set; }
+
+        public UserDTO User { get; set; }
     }
     public class PingDTO
     {

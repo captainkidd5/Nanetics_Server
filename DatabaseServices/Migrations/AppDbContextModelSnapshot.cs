@@ -257,7 +257,6 @@ namespace DatabaseServices.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("GroupingId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("HardwareId")
@@ -276,6 +275,9 @@ namespace DatabaseServices.Migrations
                     b.Property<DateTime>("StatusUpdatedTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("X509PrimaryThumbprint")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -283,6 +285,8 @@ namespace DatabaseServices.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupingId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Devices");
                 });
@@ -369,11 +373,17 @@ namespace DatabaseServices.Migrations
                 {
                     b.HasOne("Models.GroupingStuff.Grouping", "Grouping")
                         .WithMany("Devices")
-                        .HasForeignKey("GroupingId")
+                        .HasForeignKey("GroupingId");
+
+                    b.HasOne("Models.Authentication.ApplicationUser", "User")
+                        .WithMany("Devices")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Grouping");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Models.GroupingStuff.Grouping", b =>
@@ -389,6 +399,8 @@ namespace DatabaseServices.Migrations
 
             modelBuilder.Entity("Models.Authentication.ApplicationUser", b =>
                 {
+                    b.Navigation("Devices");
+
                     b.Navigation("Groupings");
                 });
 

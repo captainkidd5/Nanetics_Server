@@ -15,6 +15,8 @@ namespace Models.Devices
  
     public class Device
     {
+
+        
         public string Id { get; set; } = string.Empty;
 
         public string Nickname { get; set; } = string.Empty;
@@ -41,10 +43,8 @@ namespace Models.Devices
 
         public int CloudToDeviceMessageCount { get;  set; }
 
-        [ForeignKey("Grouping")]
-        public string GroupingId{ get; set; }
         public Grouping Grouping { get; set; }
 
-
+        public ApplicationUser User { get; set; }
     }
 }
