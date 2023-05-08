@@ -61,6 +61,26 @@ namespace Api.Controllers.Devices
         }
 
         /// <summary>
+        /// Returns true if database contains a device with the given hardware id. Refresh token must be sent.
+        /// </summary>
+        /// <param name="hardwareId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("isRegistered")]
+        public async Task<IActionResult> IsRegistered([FromQuery] ulong hardwareId)
+        {
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
+            if (user == null)
+                return Unauthorized("Invalid access token");
+
+            Device d = await _dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == hardwareId);
+            bool isRegistered = d != null;
+
+                return Ok(new { IsRegistered = isRegistered});
+            
+        }
+
+        /// <summary>
         /// Device is plugged in, if device does NOT have a device id and x509 certificate, then ping api for a new one. Will both
         /// register the device in IoT and in db (without owner)
         /// </summary>
@@ -75,9 +95,9 @@ namespace Api.Controllers.Devices
                                 HttpContext.Request.Method,
                                 registryRequest.DeviceHardWareId);
 
-            //ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
-            //if (user == null)
-            //    return Unauthorized("Invalid refresh token");
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
+            if (user == null)
+                return Unauthorized("Invalid access token");
 
             var devices = await _dbContext.Devices.ToListAsync();
                 if (await _dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == registryRequest.DeviceHardWareId) != null)
@@ -134,9 +154,9 @@ namespace Api.Controllers.Devices
         {
             try
             {
-                ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+                ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
                 if (user == null)
-                    return Unauthorized("Invalid refresh token");
+                    return Unauthorized("Invalid access token");
 
                 user = await _dbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
                 Grouping grouping = user.Groupings.FirstOrDefault(x => x.Name.ToLower() == groupingName.ToLower());

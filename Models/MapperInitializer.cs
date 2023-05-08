@@ -32,6 +32,8 @@ namespace Models
 
             CreateMap<Grouping, GroupingDTO>().ReverseMap();
             CreateMap<Grouping, GroupingRegistrationRequest>().ReverseMap();
+            CreateMap<Grouping, GroupingUpdateRequest>().ReverseMap();
+
 
             CreateMap<Device, DeviceDTO>().ReverseMap();
 

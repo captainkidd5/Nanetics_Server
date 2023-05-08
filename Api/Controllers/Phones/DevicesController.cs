@@ -48,7 +48,7 @@ namespace Api.Controllers.Phones
 
         //    ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
         //    if (user == null)
-        //        return Unauthorized("Invalid refresh token");
+        //        return Unauthorized("Invalid access token");
 
         //    user = await _userManager.Users.Include("Words").FirstOrDefaultAsync(x => x.UserName.Equals(user.UserName));
 

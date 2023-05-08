@@ -1,9 +1,12 @@
-﻿using Contracts.Authentication.Identity.Create;
+﻿using Azure.Core;
+using Contracts.Authentication.Identity.Create;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Models.Authentication;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,25 +18,27 @@ namespace Api.DependencyInjections.Authentication
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly RoleManager<ApplicationRole> _rolesManager;
+        private readonly IWebHostEnvironment _env;
 
         public AuthManager(UserManager<ApplicationUser> userManager,
-            IConfiguration configuration, RoleManager<ApplicationRole> rolesManager)
+            IConfiguration configuration, RoleManager<ApplicationRole> rolesManager, IWebHostEnvironment env)
         {
             _userManager = userManager;
             _configuration = configuration;
             _rolesManager = rolesManager;
+            _env = env;
         }
         public async Task<string> CreateToken(ApplicationUser user, bool isRefreshToken)
         {
             SigningCredentials signingCredentials = GetSigningCredentials();
 
             //minutes
-          //  int expires = 1;
+            //  int expires = 1;
+            DateTime expiryTime = DateTime.Now.AddDays(7);
+            if (!isRefreshToken)
+                expiryTime = DateTime.Now.AddMinutes(2);
 
-          //  if (isRefreshToken)
-               int expires = 120;
-
-            SecurityTokenDescriptor tokenDescription = await GenerateToken(user, signingCredentials, expires);
+            SecurityTokenDescriptor tokenDescription = await GenerateToken(user, signingCredentials, DateTime.Now.AddDays(7));
 
             
 
@@ -42,12 +47,11 @@ namespace Api.DependencyInjections.Authentication
             return tokenHandler.WriteToken(token);
         }
 
-        private async Task<SecurityTokenDescriptor> GenerateToken(ApplicationUser user, SigningCredentials signingCredentials, int expiryTime)
+        private async Task<SecurityTokenDescriptor> GenerateToken(ApplicationUser user, SigningCredentials signingCredentials, DateTime expireTime)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
             Guid guid = Guid.NewGuid();
             //int minutes = int.Parse(jwtSettings.GetSection("Lifetime").Value);
-            int minutes = expiryTime;
 
             SecurityTokenDescriptor token = new SecurityTokenDescriptor()
             {
@@ -56,7 +60,7 @@ namespace Api.DependencyInjections.Authentication
                 Audience = _configuration.GetSection("HostPath").Value,
 
 
-                Expires = DateTime.UtcNow.Add(TimeSpan.FromMinutes(minutes)),
+                Expires = expireTime,
                 SigningCredentials = signingCredentials
             };
 
@@ -103,15 +107,55 @@ namespace Api.DependencyInjections.Authentication
             return (user != null && await _userManager.CheckPasswordAsync(user, userDTO.Password));
         }
 
-  
+        public class RefreshTokenStatusResponse
+        {
+            public HttpStatusCode StatusCode { get; set; }
+            public string Token { get; set; }
+        }
+        public async Task<RefreshTokenStatusResponse> RefreshToken(HttpRequest request, HttpResponse response)
+        {
+            //TODO: Handle edge cases found here:
+            //https://github.com/gitdagray/nodejs_jwt_auth/blob/main/controllers/refreshTokenController.js
 
-        //public string GenerateRefreshToken()
-        //{
-        //    byte[] randomNumber = new byte[64];
-        //    using RandomNumberGenerator rng = RandomNumberGenerator.Create();
-        //    rng.GetBytes(randomNumber);
-        //    return Convert.ToBase64String(randomNumber);
-        //}
+
+            string refreshVal = string.Empty;
+            RefreshTokenStatusResponse tokenResponse = new RefreshTokenStatusResponse() { StatusCode = HttpStatusCode.BadRequest };
+            if (!request.Cookies.TryGetValue("refreshToken", out refreshVal))
+                return tokenResponse;
+
+
+            ClaimsPrincipal claim = VerifyIfValidToken(refreshVal);
+            if (claim == null)
+                return tokenResponse;
+
+
+            var user = await _userManager.FindByNameAsync(claim.Identity.Name);
+
+            if (user == null || user.RefreshToken == null
+                || user.RefreshTokenExpiryTime <= DateTime.Now)
+            {
+                return tokenResponse;
+            }
+            if (user.RefreshToken.ToLower() == refreshVal.ToLower())
+            {
+                //reuse
+            }
+
+
+
+            //create new access token and send back to user
+            string accessToken = await CreateToken(user, false);
+
+
+            //Response.Cookies.Append("Authorization", accessToken,
+            //    new CookieOptions() { Expires = DateTimeOffset.Now.AddMinutes(2), IsEssential = true });
+
+            tokenResponse.Token = accessToken;
+            tokenResponse.StatusCode = HttpStatusCode.OK;
+            return tokenResponse;
+
+        }
+
 
         public ClaimsPrincipal? VerifyIfValidToken(string? token)
         {
@@ -140,13 +184,21 @@ namespace Api.DependencyInjections.Authentication
             
 
         }
-
-        public async Task<ApplicationUser> VerifyRefreshTokenAndReturnUser(HttpRequest httpRequest)
+        /// <summary>
+        /// Returns the application user if both the refresh token and the claimsprinciple verify the user.
+        /// Development will only check the claims principle
+        /// </summary>
+        /// <param name="httpRequest"></param>
+        /// <param name="claimsPrincipal"></param>
+        /// <returns></returns>
+        public async Task<ApplicationUser> VerifyAccessTokenAndReturnuser(HttpRequest httpRequest, ClaimsPrincipal claimsPrincipal)
         {
-
+            //Dev environment is incapable of using refresh tokens, just return the user
+            if (_env.IsDevelopment())
+                return await _userManager.GetUserAsync(claimsPrincipal);
             StringValues strValues = new StringValues();
 
-            if (!httpRequest.Headers.TryGetValue("refreshToken", out strValues))
+            if (!httpRequest.Headers.TryGetValue("accessToken", out strValues))
                 return null;
 
             string newVal = strValues.First().Replace("{", "").Replace("}", "").Replace("Bearer ", "");

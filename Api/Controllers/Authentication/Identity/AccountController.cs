@@ -200,8 +200,9 @@ namespace Api.Controllers.Authentication.Identity
         [Route("users")]
         public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
-
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
+               if (user == null)
+                return Unauthorized("Invalid access token");
             _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Get Users ATTEMPT BY user {email}",
 HttpContext.GetEndpoint(),
          HttpContext.Request.Method,
@@ -232,8 +233,9 @@ HttpContext.GetEndpoint(),
         [Route("getRoles")]
         public async Task<IActionResult> GetRoles([FromQuery] string email)
         {
-            ApplicationUser caller = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
-
+            ApplicationUser caller = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
+            if (caller == null)
+                return Unauthorized("Invalid access token");
             _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Get Roles ATTEMPT FOR user {email} " +
                 "BY caller {Caller}",
 HttpContext.GetEndpoint(),
@@ -261,8 +263,9 @@ HttpContext.GetEndpoint(),
         [Route("addToRole")]
         public async Task<IActionResult> AddToRole([FromQuery] string email, [FromQuery] string roleName)
         {
-            ApplicationUser user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email.Equals(email));
-
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
+            if (user == null)
+                return Unauthorized("Invalid access token");
             IList<string> roles = await _userManager.GetRolesAsync(user);
             if (roles.Contains(roleName))
                 return BadRequest(roles);

@@ -19,7 +19,8 @@ using Microsoft.AspNetCore.Identity;
 using Api.DependencyInjections.S3;
 using Core.DependencyInjections.MQTT;
 using Api.DependencyInjections.IoT;
-
+using Microsoft.Extensions.Http;
+using Api.CustomMiddlewares;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -120,6 +121,7 @@ try
 
 
     builder.Services.AddHttpClient();
+   
 
     builder.Services.AddScoped<IAuthManager, AuthManager>();
 

@@ -30,9 +30,9 @@ namespace Api.Controllers.Devices
         [Route("devices")]
         public async Task<IActionResult> GetDevices([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
             if (user == null)
-                return Unauthorized("Invalid refresh token");
+                return Unauthorized("Invalid access token");
             int totalDevices = await _dbContext.Devices.CountAsync();
 
             // Calculate the number of pages

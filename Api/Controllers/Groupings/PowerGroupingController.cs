@@ -38,9 +38,9 @@ namespace Api.Controllers.groupings
 
         public async Task<IActionResult> CreategroupingForUser([FromBody] GroupingRegistrationRequest groupingRegistrationRequest, [FromQuery] string userId)
         {
-            ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
             if (user == null)
-                return Unauthorized("Invalid refresh token");
+                return Unauthorized("Invalid access token");
 
             user = await _appDbContext.Users.Include("groupinges").FirstOrDefaultAsync(x => x.Id == user.Id);
             if (!ModelState.IsValid)
@@ -78,9 +78,9 @@ namespace Api.Controllers.groupings
 
         public async Task<IActionResult> Updategrouping([FromBody] GroupingUpdateRequest groupingUpdateRequest)
         {
-            ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
             if (user == null)
-                return Unauthorized("Invalid refresh token");
+                return Unauthorized("Invalid access token");
             _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Update grouping on database ATTEMPT for " +
          "grouping name {GroupingName} BY {User}",
      HttpContext.GetEndpoint(),
@@ -118,9 +118,9 @@ namespace Api.Controllers.groupings
         [Route("deletegroupingForUser")]
         public async Task<IActionResult> Deletegrouping([FromQuery] string groupingId)
         {
-            ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
             if (user == null)
-                return Unauthorized("Invalid refresh token");
+                return Unauthorized("Invalid access token");
             _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Delete grouping on database ATTEMPT for " +
          "grouping id {GroupingId} BY {User}",
      HttpContext.GetEndpoint(),

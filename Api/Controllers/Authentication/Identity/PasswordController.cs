@@ -88,9 +88,9 @@ namespace Api.Controllers.Authentication.Identity
         [Route("changePassword")]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePasswordRequest)
         {
-            ApplicationUser user = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
             if (user == null)
-                return Unauthorized("Invalid refresh token");
+                return Unauthorized("Invalid access token");
 
 
             IdentityResult resetPassResult = await _userManager.ChangePasswordAsync(user, changePasswordRequest.OldPassword, changePasswordRequest.NewPassword);

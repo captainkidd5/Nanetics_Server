@@ -15,6 +15,7 @@ using System.Text;
 using Api.DependencyInjections.Email;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Web;
+using static Api.DependencyInjections.Authentication.AuthManager;
 
 namespace Api.Controllers.Authentication.Identity
 {
@@ -215,7 +216,7 @@ namespace Api.Controllers.Authentication.Identity
         }
         private async Task<IActionResult> SendConfirmationEmail(LoginUserDTO userDTO, ApplicationUser user)
         {
-                ApplicationUser caller = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+                ApplicationUser caller = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
 
             _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Confirmation Email send ATTEMPT for {email}" +
                 " BY caller {caller}",
@@ -259,14 +260,6 @@ namespace Api.Controllers.Authentication.Identity
                             loginUserDTO.Email);
 
 
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(loginUserDTO);
-            }
-
-            try
-            {
-
                 if (!await _authManager.ValidateUser(loginUserDTO))
                 {
                     return Unauthorized();
@@ -277,14 +270,14 @@ namespace Api.Controllers.Authentication.Identity
 
                 if (!user.EmailConfirmed)
                     return Unauthorized("Please confirm your email address");
-                //TODO: Make days part of config
+
                 user.RefreshToken = await _authManager.CreateToken(user, true);
                 user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
                 await _userManager.UpdateAsync(user);
-                Response.Cookies.Append("refreshToken", await _authManager.CreateToken(user, true),
+                Response.Cookies.Append("refreshToken", user.RefreshToken,
                     new CookieOptions()
                     {
-                        Expires = DateTimeOffset.Now.AddDays(3),
+                        Expires = user.RefreshTokenExpiryTime,
                         HttpOnly = true,
                         IsEssential = true
                     });
@@ -293,12 +286,7 @@ namespace Api.Controllers.Authentication.Identity
                                 HttpContext.Request.Method,
                                 loginUserDTO.Email);
                 return Accepted(new { Token = await _authManager.CreateToken(user, false) });
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Something went wrong in name of {nameof(Login)}");
-                return Problem(e.ToString(), statusCode: 500);
-            }
+
         }
 
         [HttpGet]
@@ -308,55 +296,24 @@ namespace Api.Controllers.Authentication.Identity
             //TODO: Handle edge cases found here:
             //https://github.com/gitdagray/nodejs_jwt_auth/blob/main/controllers/refreshTokenController.js
 
+            RefreshTokenStatusResponse tokenResponse = await _authManager.RefreshToken(Request, Response);
 
-            string refreshVal = string.Empty;
-
-
-            if (!Request.Cookies.TryGetValue("refreshToken", out refreshVal))
-                return BadRequest();
-
-
-            ClaimsPrincipal claim = _authManager.VerifyIfValidToken(refreshVal);
-            if (claim == null)
-                return BadRequest("Invalid access token or refresh token");
-
-
-            var user = await _userManager.FindByNameAsync(claim.Identity.Name);
-
-            if (user == null || user.RefreshToken == null
-                || user.RefreshTokenExpiryTime <= DateTime.Now)
+            switch (tokenResponse.StatusCode)
             {
-                return BadRequest("Invalid access token or refresh token");
-            }
-            if (user.RefreshToken.ToLower() == refreshVal.ToLower())
-            {
-                //reuse
+                case System.Net.HttpStatusCode.OK:
+
+                    Response.Cookies.Append("Authorization", tokenResponse.Token,
+                       new CookieOptions() { Expires = DateTimeOffset.Now.AddMinutes(2), IsEssential = true });
+                    break;
+                case System.Net.HttpStatusCode.BadRequest:
+                    return BadRequest();
+                default:
+                    return BadRequest();
+
             }
 
+            return BadRequest();
 
-
-
-            string newToken = await _authManager.CreateToken(user, false);
-            string newRefresh = await _authManager.CreateToken(user, true);
-
-            //Refresh token is sent only sent back as cookie (to prevent js access)
-
-            Response.Cookies.Append("refreshToken", newRefresh,
-                new CookieOptions()
-                {
-                    Expires = DateTimeOffset.Now.AddDays(3),
-                    HttpOnly = true,
-                    IsEssential = true
-                });
-
-            Response.Cookies.Append("Authorization", newToken,
-                new CookieOptions() { Expires = DateTimeOffset.Now.AddMinutes(2), IsEssential = true });
-
-
-            user.RefreshToken = newRefresh;
-            user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(120);
-            await _userManager.UpdateAsync(user);
-            return Ok(new { Token = await _authManager.CreateToken(user, false) });
 
         }
 

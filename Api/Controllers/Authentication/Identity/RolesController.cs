@@ -65,7 +65,7 @@ namespace Api.Controllers.Authentication.Identity
         [Route("create")]
         public async Task<IActionResult> Create([FromQuery] string name)
         {
-            ApplicationUser caller = await _authManager.VerifyRefreshTokenAndReturnUser(Request);
+            ApplicationUser caller = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
 
             _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message:ATTEMPT to create role {role} BY caller {caller}",
      HttpContext.GetEndpoint(),
