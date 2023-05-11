@@ -3,6 +3,7 @@ using AutoMapper;
 using Contracts.Authentication.Identity.Create;
 using Contracts.Devices;
 using DatabaseServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Devices;
@@ -61,10 +62,14 @@ namespace Api.Controllers.Devices
         }
 
         /// <summary>
-        /// Returns true if database contains a device with the given hardware id. Refresh token must be sent.
+        /// Returns true if database contains a device with the given hardware id
         /// </summary>
         /// <param name="hardwareId"></param>
         /// <returns></returns>
+        /// 
+        [Authorize("LoggedIn")]
+
+
         [HttpGet]
         [Route("isRegistered")]
         public async Task<IActionResult> IsRegistered([FromQuery] ulong hardwareId)
@@ -85,15 +90,12 @@ namespace Api.Controllers.Devices
         /// register the device in IoT and in db (without owner)
         /// </summary>
         /// <returns></returns>
+        /// 
+        [Authorize("LoggedIn")]
         [HttpPost]
         [Route("RegistrationRequest")]
         public async Task<IActionResult> RegistrationRequest([FromBody] DeviceRegistryRequest registryRequest)
         {
-            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Device Registration on database ATTEMPT for" +
-                " device with hardware id: {DeviceId}",
-                       HttpContext.GetEndpoint(),
-                                HttpContext.Request.Method,
-                                registryRequest.DeviceHardWareId);
 
             ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
             if (user == null)
@@ -131,17 +133,14 @@ namespace Api.Controllers.Devices
                     CloudToDeviceMessageCount = 1,
                  
                 };
-          
+            if (user.Devices == null)
+                user.Devices = new List<Device>();
+            user.Devices.Add(modelDevice);
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+            
 
-                await _dbContext.Devices.AddAsync(modelDevice);
-                await _dbContext.SaveChangesAsync();
 
-
-            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Device Registration on database SUCCESS for" +
-              " device with hardware id: {DeviceId}",
-                     HttpContext.GetEndpoint(),
-                              HttpContext.Request.Method,
-                              registryRequest.DeviceHardWareId);
             return Ok(response);
 
 
@@ -185,6 +184,45 @@ namespace Api.Controllers.Devices
                 return BadRequest(e);
             }
           
+        }
+        [HttpGet]
+        [Route("devicesWithoutGrouping")]
+        public async Task<IActionResult> GetDevicesWithoutGrouping([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request, User);
+                if (user == null)
+                    return Unauthorized("Invalid access token");
+
+                user = await _dbContext.Users.Include("Devices").FirstOrDefaultAsync(x => x.Id == user.Id);
+
+
+
+                if (user.Devices == null || user.Devices.Count == 0)
+                {
+                    return Ok(new DeviceQueryResponse() { Devices = new List<DeviceDTO>() { }, TotalCount = 0 });
+
+                }
+
+                // Calculate the number of pages
+                int totalPages = (int)Math.Ceiling((double)user.Devices.Count / pageSize);
+
+                // Get the users for the specified page
+                var devices = await _dbContext.Devices
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                List<DeviceDTO> deviceDTOs = _mapper.Map<List<Models.Devices.Device>, List<DeviceDTO>>(devices);
+
+                return Ok(new DeviceQueryResponse() { Devices = deviceDTOs, TotalCount = user.Devices.Count });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+
         }
         [HttpGet]
         [Route("GetData")]

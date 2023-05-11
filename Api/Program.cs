@@ -21,6 +21,7 @@ using Core.DependencyInjections.MQTT;
 using Api.DependencyInjections.IoT;
 using Microsoft.Extensions.Http;
 using Api.CustomMiddlewares;
+using Microsoft.AspNetCore.Authorization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -115,7 +116,7 @@ try
 
     builder.Host.UseSerilog();
     builder.Services.AddSingleton<IMQTTService, MQTTService>();
-
+    builder.Services.AddSingleton<IAuthorizationHandler, AuthorizationPolicies>();
     builder.Services.AddHostedService<PushWorker>();
     //builder.Services.AddHostedService<MQTTWorker>();
 
@@ -136,13 +137,13 @@ try
 
     VersionConfiguration versionConfig = new VersionConfiguration(builder);
     versionConfig.Build();
-
+    builder.Services.AddAuthorization(options =>
+      options.AddPolicy("LoggedIn",
+      policy => policy.RequireRole("User")));
     builder.Services.AddControllers(config =>
     {
-        //config.CacheProfiles.Add("LongDuration", new CacheProfile
-        //{
-        //    Duration = 5
-        //});
+
+        config.Filters.Add(typeof(LogUnauthorizedRequestFilter));
     });
     WebApplication app = builder.Build();
     app.UseSerilogRequestLogging();

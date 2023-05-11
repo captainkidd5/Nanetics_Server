@@ -16,6 +16,7 @@ using Api.DependencyInjections.Email;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Web;
 using static Api.DependencyInjections.Authentication.AuthManager;
+using System;
 
 namespace Api.Controllers.Authentication.Identity
 {
@@ -274,6 +275,7 @@ namespace Api.Controllers.Authentication.Identity
                 user.RefreshToken = await _authManager.CreateToken(user, true);
                 user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
                 await _userManager.UpdateAsync(user);
+            //RefreshToken is returned as a header
                 Response.Cookies.Append("refreshToken", user.RefreshToken,
                     new CookieOptions()
                     {
@@ -285,6 +287,7 @@ namespace Api.Controllers.Authentication.Identity
                        HttpContext.GetEndpoint(),
                                 HttpContext.Request.Method,
                                 loginUserDTO.Email);
+            //return ACCESS token in json payload
                 return Accepted(new { Token = await _authManager.CreateToken(user, false) });
 
         }
@@ -297,23 +300,24 @@ namespace Api.Controllers.Authentication.Identity
             //https://github.com/gitdagray/nodejs_jwt_auth/blob/main/controllers/refreshTokenController.js
 
             RefreshTokenStatusResponse tokenResponse = await _authManager.RefreshToken(Request, Response);
+         
 
-            switch (tokenResponse.StatusCode)
+            if(tokenResponse.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                case System.Net.HttpStatusCode.OK:
-
-                    Response.Cookies.Append("Authorization", tokenResponse.Token,
-                       new CookieOptions() { Expires = DateTimeOffset.Now.AddMinutes(2), IsEssential = true });
-                    break;
-                case System.Net.HttpStatusCode.BadRequest:
-                    return BadRequest();
-                default:
-                    return BadRequest();
+                Response.Cookies.Append("Authorization", tokenResponse.Token,
+                    new CookieOptions() { Expires = DateTimeOffset.Now.AddMinutes(2), IsEssential = true });
+                return Ok(tokenResponse.ErrorMessage);
 
             }
+            else
+            {
+                _logger.LogError("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Exception: {exception}",
+   HttpContext.GetEndpoint(),
+                  HttpContext.Request.Method,
+                  tokenResponse.ErrorMessage);
+                return BadRequest(tokenResponse.ErrorMessage);
 
-            return BadRequest();
-
+            }
 
         }
 

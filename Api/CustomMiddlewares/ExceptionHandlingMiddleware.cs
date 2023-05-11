@@ -2,6 +2,7 @@
 using Contracts.Errors;
 using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.Text;
 using System.Text.Json;
 
 namespace ExceptionHandling.CustomMiddlewares;
@@ -21,7 +22,27 @@ public class ExceptionHandlingMiddleware
     {
         try
         {
+            var request = httpContext.Request;
+            var requestBody = string.Empty;
+
+            // Read the request body if present
+            if (request.ContentLength != null && request.ContentLength > 0)
+            {
+                request.EnableBuffering();
+                var buffer = new byte[Convert.ToInt32(request.ContentLength)];
+                await request.Body.ReadAsync(buffer, 0, buffer.Length);
+                requestBody = Encoding.UTF8.GetString(buffer);
+                request.Body.Position = 0;
+            }
+
+            // Log all headers and request body
+            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, RequestHeaders: {Request_Headers}, RequestBody: {Request_Body}",
+                httpContext.GetEndpoint(),
+                httpContext.Request.Method,
+                request.Headers,
+                requestBody);
             await _next(httpContext);
+
         }
         catch (Exception ex)
         {

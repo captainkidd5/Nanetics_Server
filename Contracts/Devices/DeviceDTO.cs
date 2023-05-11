@@ -44,7 +44,7 @@ namespace Contracts.Devices
 
         public GroupingDTO Grouping{ get; set; }
 
-        public UserDTO User { get; set; }
+        public string UserId { get; set; }
     }
     public class PingDTO
     {

@@ -111,6 +111,8 @@ namespace Api.DependencyInjections.Authentication
         {
             public HttpStatusCode StatusCode { get; set; }
             public string Token { get; set; }
+
+            public string ErrorMessage { get; set; }
         }
         public async Task<RefreshTokenStatusResponse> RefreshToken(HttpRequest request, HttpResponse response)
         {
@@ -119,14 +121,23 @@ namespace Api.DependencyInjections.Authentication
 
 
             string refreshVal = string.Empty;
-            RefreshTokenStatusResponse tokenResponse = new RefreshTokenStatusResponse() { StatusCode = HttpStatusCode.BadRequest };
+            RefreshTokenStatusResponse tokenResponse = new RefreshTokenStatusResponse() { StatusCode = HttpStatusCode.BadRequest, ErrorMessage = "Bad Request" };
             if (!request.Cookies.TryGetValue("refreshToken", out refreshVal))
+            {
+                tokenResponse.ErrorMessage = "Cookies missing refresh token";
                 return tokenResponse;
+
+            }
 
 
             ClaimsPrincipal claim = VerifyIfValidToken(refreshVal);
             if (claim == null)
+            {
+                tokenResponse.ErrorMessage = "No claim found";
+
                 return tokenResponse;
+
+            }
 
 
             var user = await _userManager.FindByNameAsync(claim.Identity.Name);
@@ -134,6 +145,8 @@ namespace Api.DependencyInjections.Authentication
             if (user == null || user.RefreshToken == null
                 || user.RefreshTokenExpiryTime <= DateTime.Now)
             {
+                tokenResponse.ErrorMessage = "User is null";
+
                 return tokenResponse;
             }
             if (user.RefreshToken.ToLower() == refreshVal.ToLower())
@@ -151,6 +164,8 @@ namespace Api.DependencyInjections.Authentication
             //    new CookieOptions() { Expires = DateTimeOffset.Now.AddMinutes(2), IsEssential = true });
 
             tokenResponse.Token = accessToken;
+            tokenResponse.ErrorMessage = "Token accepted";
+
             tokenResponse.StatusCode = HttpStatusCode.OK;
             return tokenResponse;
 
@@ -194,7 +209,7 @@ namespace Api.DependencyInjections.Authentication
         public async Task<ApplicationUser> VerifyAccessTokenAndReturnuser(HttpRequest httpRequest, ClaimsPrincipal claimsPrincipal)
         {
             //Dev environment is incapable of using refresh tokens, just return the user
-            if (_env.IsDevelopment())
+            //if (_env.IsDevelopment())
                 return await _userManager.GetUserAsync(claimsPrincipal);
             StringValues strValues = new StringValues();
 
