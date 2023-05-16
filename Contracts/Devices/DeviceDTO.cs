@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -42,7 +43,7 @@ namespace Contracts.Devices
 
         public int CloudToDeviceMessageCount { get; set; }
 
-        public GroupingDTO Grouping{ get; set; }
+        public string GroupingId{ get; set; }
 
         public string UserId { get; set; }
     }
@@ -66,5 +67,16 @@ namespace Contracts.Devices
     {
         public List<DeviceDTO> Devices { get; set; }
         public int TotalCount { get; set; }
+    }
+
+    public class DeviceUpdateRequest
+    {
+
+        [Required]
+        public string Id { get; set; }
+        [Required]
+        public string? Nickname { get; set; }
+        public string? GroupingId { get; set; }
+
     }
 }

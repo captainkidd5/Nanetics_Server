@@ -132,6 +132,9 @@ namespace Api.Controllers.groupings
             Grouping grouping = user.Groupings.FirstOrDefault(x => x.Id == groupingUpdateRequest.Id);
             if (grouping == null)
                 return BadRequest($"grouping with id {groupingUpdateRequest.Id} not found");
+            if (grouping.IsBaseGrouping)
+                return BadRequest($"Not permitted to edit unassigned grouping");
+           
 
             if (grouping.User != user)
                 return BadRequest("User must own grouping to update it");
@@ -213,21 +216,24 @@ namespace Api.Controllers.groupings
             ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
             if (user == null)
                 return Unauthorized("Invalid access token");
-            _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Delete grouping on database ATTEMPT for " +
-         "grouping id {GroupingId} BY {User}",
-     HttpContext.GetEndpoint(),
-              HttpContext.Request.Method,
-             groupingId,
-              user.Email);
-            List<Grouping> groupings = _appDbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id).Result.Groupings;
+
+            List<Grouping> groupings = _appDbContext.Users.Include("Groupings").Include("Devices").FirstOrDefaultAsync(x => x.Id == user.Id).Result.Groupings;
 
             Grouping grouping = groupings.FirstOrDefault(x => x.Id == groupingId);
 
             if (grouping == null)
                 return NotFound($"User does not have grouping with id{groupingId}");
+            if (grouping.IsBaseGrouping)
+                return BadRequest($"Not permitted to delete unassigned grouping");
             if (grouping.User != user)
                 return BadRequest("Must be owner of grouping to delete it.");
+
+            //Add all devices which were part of this grouping to the base grouping once again
+            Grouping baseGrouping = groupings.FirstOrDefault(x => x.IsBaseGrouping);
+            baseGrouping.Devices.AddRange(grouping.Devices);
+            
             _appDbContext.Groupings.Remove(grouping);
+            _appDbContext.Update(baseGrouping);
             var result = await _appDbContext.SaveChangesAsync();
             _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Delete grouping on database SUCCESS for " +
       "grouping id {GroupingId} BY {User}",

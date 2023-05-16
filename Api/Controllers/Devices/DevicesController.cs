@@ -2,6 +2,7 @@
 using AutoMapper;
 using Contracts.Authentication.Identity.Create;
 using Contracts.Devices;
+using Contracts.GroupingStuff;
 using DatabaseServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -41,7 +42,7 @@ namespace Api.Controllers.Devices
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDeviceRegistryService _deviceRegistryService;
 
-        public DevicesController(AppDbContext dbContext,IMapper mapper,ILogger<Device> logger, IAuthManager authManager, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
+        public DevicesController(AppDbContext dbContext, IMapper mapper, ILogger<Device> logger, IAuthManager authManager, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -74,15 +75,15 @@ namespace Api.Controllers.Devices
         [Route("isRegistered")]
         public async Task<IActionResult> IsRegistered([FromQuery] ulong hardwareId)
         {
-            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request, User);
             if (user == null)
                 return Unauthorized("Invalid access token");
 
             Device d = await _dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == hardwareId);
             bool isRegistered = d != null;
 
-                return Ok(new { IsRegistered = isRegistered});
-            
+            return Ok(new { IsRegistered = isRegistered });
+
         }
 
         /// <summary>
@@ -97,12 +98,13 @@ namespace Api.Controllers.Devices
         public async Task<IActionResult> RegistrationRequest([FromBody] DeviceRegistryRequest registryRequest)
         {
 
-            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request, User);
             if (user == null)
                 return Unauthorized("Invalid access token");
+            user = await _dbContext.Users.Include("Groupings").Include("Devices").FirstOrDefaultAsync(x => x.Id == user.Id);
 
             var devices = await _dbContext.Devices.ToListAsync();
-                if (await _dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == registryRequest.DeviceHardWareId) != null)
+            if (await _dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == registryRequest.DeviceHardWareId) != null)
             {
                 string erMsg = $"Device with hardware id {registryRequest.DeviceHardWareId} already exists in database";
                 _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Device Registration on database FAILURE for" +
@@ -114,31 +116,39 @@ namespace Api.Controllers.Devices
                 return BadRequest(erMsg);
             }
 
-                Microsoft.Azure.Devices.Device device = await _deviceRegistryService.CreateAndRegisterDevice(registryRequest);
-                DeviceRegistryResponse response = new DeviceRegistryResponse() {
-                    AssignedId = device.Id,
-                    X509Thumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint
-                };
-                
-                Models.Devices.Device modelDevice = new Models.Devices.Device()
-                {
-                    Id = device.Id,
-                    //GroupingId = "888d2c00-661e-490f-847e-734d6805029d",
-                    HardwareId = registryRequest.DeviceHardWareId,
-                    X509PrimaryThumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint,
-                    GenerationId = 1,
-                    ETag = device.ETag,
-                    ConnectionState = DeviceConnectionState.Disconnected,
-                    Status = DeviceStatus.Disabled,
-                    CloudToDeviceMessageCount = 1,
-                 
-                };
+            Microsoft.Azure.Devices.Device device = await _deviceRegistryService.CreateAndRegisterDevice(registryRequest);
+            DeviceRegistryResponse response = new DeviceRegistryResponse()
+            {
+                AssignedId = device.Id,
+                X509Thumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint
+            };
+
+
+            Models.Devices.Device modelDevice = new Models.Devices.Device()
+            {
+                Id = device.Id,
+                //GroupingId = "888d2c00-661e-490f-847e-734d6805029d",
+                HardwareId = registryRequest.DeviceHardWareId,
+                X509PrimaryThumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint,
+                GenerationId = 1,
+                ETag = device.ETag,
+                ConnectionState = DeviceConnectionState.Disconnected,
+                Status = DeviceStatus.Disabled,
+                CloudToDeviceMessageCount = 1,
+
+
+
+            };
+            Grouping userBaseGrouping = user.Groupings.FirstOrDefault(x => x.IsBaseGrouping);
+            userBaseGrouping.Devices.Add(modelDevice);
+            _dbContext.Update(userBaseGrouping);
+
             if (user.Devices == null)
                 user.Devices = new List<Device>();
             user.Devices.Add(modelDevice);
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
-            
+
 
 
             return Ok(response);
@@ -146,18 +156,18 @@ namespace Api.Controllers.Devices
 
         }
 
-      
+
         [HttpGet]
         [Route("devicesForGrouping")]
         public async Task<IActionResult> GetDevicesForGrouping([FromQuery] string groupingName, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request,User);
+                ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request, User);
                 if (user == null)
                     return Unauthorized("Invalid access token");
 
-                user = await _dbContext.Users.Include("Groupings").FirstOrDefaultAsync(x => x.Id == user.Id);
+                user = await _dbContext.Users.Include("Groupings").Include("Devices").FirstOrDefaultAsync(x => x.Id == user.Id);
                 Grouping grouping = user.Groupings.FirstOrDefault(x => x.Name.ToLower() == groupingName.ToLower());
 
                 if (grouping.Devices == null)
@@ -170,10 +180,9 @@ namespace Api.Controllers.Devices
                 int totalPages = (int)Math.Ceiling((double)grouping.Devices.Count / pageSize);
 
                 // Get the users for the specified page
-                var devices = await _dbContext.Devices
+                var devices = grouping.Devices
                     .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                    .Take(pageSize).ToList();
 
                 List<DeviceDTO> deviceDTOs = _mapper.Map<List<Models.Devices.Device>, List<DeviceDTO>>(devices);
 
@@ -183,7 +192,7 @@ namespace Api.Controllers.Devices
             {
                 return BadRequest(e);
             }
-          
+
         }
         [HttpGet]
         [Route("devicesWithoutGrouping")]
@@ -222,6 +231,62 @@ namespace Api.Controllers.Devices
             {
                 return BadRequest(e);
             }
+
+        }
+
+        [HttpPut]
+        [Route("updateDevice")]
+
+        public async Task<IActionResult> UpdateDevice([FromBody] DeviceUpdateRequest deviceUpdateRequest)
+        {
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request, User);
+            if (user == null)
+                return Unauthorized("Invalid access token");
+
+            user = await _dbContext.Users.Include("Groupings").Include("Devices").FirstOrDefaultAsync(x => x.Id == user.Id);
+            Device device = await _dbContext.Devices.FirstOrDefaultAsync(x => x.Id == deviceUpdateRequest.Id);
+            if (!string.IsNullOrEmpty(device.Nickname) && device.Nickname != deviceUpdateRequest.Nickname)
+            {
+                if (user.Devices.FirstOrDefault(x => x.Nickname.ToLower() == deviceUpdateRequest.Nickname.ToLower()) != null)
+                {
+                    return BadRequest("Nickname already exists, please choose another");
+                }
+            }
+            if (device == null)
+                return NotFound();
+
+            //Remove device from its original grouping if a request was made to change it
+            if (device.Grouping != null && device.Grouping.Id != deviceUpdateRequest.Id)
+            {
+                Grouping originalDeviceGrouping = await _dbContext.Groupings.Include("Devices")
+                    .FirstOrDefaultAsync(x => x.Id == deviceUpdateRequest.GroupingId);
+
+                originalDeviceGrouping.Devices.Remove(device);
+                _dbContext.Update(originalDeviceGrouping);
+            }
+
+            if (!string.IsNullOrEmpty(deviceUpdateRequest.GroupingId))
+            {
+                //We are moving the device to another grouping, not just completely removing its grouping
+                Grouping grouping = user.Groupings.FirstOrDefault(x => x.Id == deviceUpdateRequest.GroupingId);
+                if (grouping == null)
+                    return BadRequest("User does not own specified grouping");
+                _dbContext.Entry(grouping).Collection(g => g.Devices).Load();
+                device.Nickname = deviceUpdateRequest.Nickname;
+
+                //Grouping does not contain device, add it
+                if (grouping.Devices.FirstOrDefault(x => x.Id == deviceUpdateRequest.Id) == null)
+                    grouping.Devices.Add(device);
+                _dbContext.Update(grouping);
+            }
+
+
+
+
+
+            var result = await _dbContext.SaveChangesAsync();
+
+            return Ok(result);
 
         }
         [HttpGet]

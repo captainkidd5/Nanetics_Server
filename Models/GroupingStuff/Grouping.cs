@@ -22,6 +22,11 @@ namespace Models.GroupingStuff
 
         public List<Device> Devices { get; set; }
 
+        /// <summary>
+        /// Given to every user by default and represents an area where devices are initially automatically assigned to.
+        /// User should not be able to edit or delete this grouping if true
+        /// </summary>
+        public bool IsBaseGrouping { get; set; }
     }
 
 }

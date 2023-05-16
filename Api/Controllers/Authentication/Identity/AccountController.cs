@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 using System.Collections.Generic;
 using Models.GroupingStuff;
+using System.Linq;
 
 namespace Api.Controllers.Authentication.Identity
 {
@@ -90,6 +91,16 @@ namespace Api.Controllers.Authentication.Identity
             user.LastName = userDTO.LastName.ToLower();
             user.PhoneNumber = userDTO.PhoneNumber;
             user.Groupings = new List<Grouping>();
+
+            Grouping baseGrouping = new Grouping();
+            baseGrouping.Id = Guid.NewGuid().ToString();
+            baseGrouping.User = user;
+            //  grouping.UserId = user.Id;
+            baseGrouping.BannerImagePath = string.Empty;
+            baseGrouping.Name = "Unassigned";
+            baseGrouping.IsBaseGrouping = true;
+            baseGrouping.Description = "New devices show up here";
+            user.Groupings.Add(baseGrouping);
             var result = await _userManager.CreateAsync(user, userDTO.Password);
 
 

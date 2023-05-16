@@ -35,7 +35,8 @@ namespace Models
             CreateMap<Grouping, GroupingUpdateRequest>().ReverseMap();
 
 
-            CreateMap<Device, DeviceDTO>().ReverseMap();
+            CreateMap<Device, DeviceDTO>()
+                .ForMember(dest => dest.GroupingId, opt => opt.MapFrom(src => src.Grouping.Id)).ReverseMap();
 
 
 
