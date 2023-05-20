@@ -17,6 +17,8 @@ namespace Contracts.GroupingStuff
         public string? Name { get; set; }
         public string? Description { get; set; }
         public ICollection<DeviceDTO> Devices{ get; set; }
+        public bool IsBaseGrouping { get; set; }
+
 
     }
 

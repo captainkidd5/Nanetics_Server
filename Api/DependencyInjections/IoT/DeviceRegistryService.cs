@@ -67,7 +67,22 @@ namespace Api.DependencyInjections.IoT
 
             string deviceConnectionString = $"HostName=NaneticsIoTHub.azure-devices.net;DeviceId={device.Id};X509Certificate={Convert.ToBase64String(cert.Export(X509ContentType.Cert))}";
 
-            // Use the devi
+        }
+        public async Task<bool> UnregisterDevice(string deviceId)
+        {
+            try
+            {
+                using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(_keyVaultRetriever.RetrieveKey("IoTHubConnectionString").Value))
+                {
+                    await registryManager.RemoveDeviceAsync(deviceId);
+                }
+                return true;
+            }
+            catch(Exception e)
+            {
+                return false;
+            }
+         
         }
 
         //public string GetDeviceConnectionString(string deviceId)
@@ -83,7 +98,7 @@ namespace Api.DependencyInjections.IoT
 
         private X509Certificate2 CreateSelfSignCert(ulong hardwareId)
         {
-            string subjectName = hardwareId.ToString(); // e.g. "CN=MyDevice"
+            string subjectName = hardwareId.ToString();
             DateTimeOffset validFrom = DateTimeOffset.UtcNow.AddDays(-1);
             DateTimeOffset validTo = DateTimeOffset.UtcNow.AddDays(365);
             X509Certificate2 deviceCertificate = new X509Certificate2();

@@ -79,4 +79,13 @@ namespace Contracts.Devices
         public string? GroupingId { get; set; }
 
     }
+
+    public class DeviceUnregisterRequest
+    {
+
+        [Required]
+        public string Id { get; set; }
+
+
+    }
 }

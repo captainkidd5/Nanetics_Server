@@ -41,6 +41,7 @@ namespace Api.Controllers.Devices
         private readonly IAuthManager _authManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDeviceRegistryService _deviceRegistryService;
+        private const string _iotString = "https://naneticshub.azureiotcentral.com/";
 
         public DevicesController(AppDbContext dbContext, IMapper mapper, ILogger<Device> logger, IAuthManager authManager, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
         {
@@ -135,18 +136,18 @@ namespace Api.Controllers.Devices
                 ConnectionState = DeviceConnectionState.Disconnected,
                 Status = DeviceStatus.Disabled,
                 CloudToDeviceMessageCount = 1,
-
+                User = user
 
 
             };
-            Grouping userBaseGrouping = user.Groupings.FirstOrDefault(x => x.IsBaseGrouping);
-            userBaseGrouping.Devices.Add(modelDevice);
-            _dbContext.Update(userBaseGrouping);
+            //eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IndhaWlraXBvbW1AZ21haWwuY29tIiwibmFtZWlkIjoiZGE5ZTI5OGEtMTE4Zi00YTE3LWEyOGUtNDRlOWU1N2NlMjBiIiwidW5pcXVlX25hbWUiOiJ3YWlpa2lwb21tQGdtYWlsLmNvbSIsInJvbGUiOlsiVXNlciIsIkFkbWluIl0sIm5iZiI6MTY4NDM1NjY3NiwiZXhwIjoxNjg0OTYxNDc2LCJpYXQiOjE2ODQzNTY2NzYsImlzcyI6IkFwaSJ9.UbnkC_lv6f9QrFCrdRyEymmPg9j5uy3CpcjoynBXuik
 
-            if (user.Devices == null)
-                user.Devices = new List<Device>();
-            user.Devices.Add(modelDevice);
-            _dbContext.Users.Update(user);
+
+                        Grouping baseGrouping = user.Groupings.FirstOrDefault(x => x.IsBaseGrouping);
+            if (baseGrouping.Devices == null)
+                baseGrouping.Devices = new List<Device>();
+            baseGrouping.Devices.Add(modelDevice);
+            _dbContext.Update(baseGrouping);
             await _dbContext.SaveChangesAsync();
 
 
@@ -288,6 +289,51 @@ namespace Api.Controllers.Devices
 
             return Ok(result);
 
+        }
+
+        [Authorize("LoggedIn")]
+        [HttpDelete]
+        [Route("UnregisterAndDeleteDevice")]
+        public async Task<IActionResult> UnregisterAndDeleteDevice([FromBody] DeviceUnregisterRequest unregisterRequest)
+        {
+            ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request, User);
+            if (user == null)
+                return Unauthorized("Invalid access token");
+
+            user = await _dbContext.Users.Include("Groupings").Include("Devices").FirstOrDefaultAsync(x => x.Id == user.Id);
+            var device = user.Devices.FirstOrDefault(x => x.Id == unregisterRequest.Id);
+
+            if (device == null)
+            {
+                string erMsg = $"Device with hardware id {unregisterRequest.Id} not found";
+                _logger.LogInformation("Controller: {Controller_Action}, HTTP Method: {Http_Method}, Message: Device Unregistration FAILURE - " +
+                    erMsg,
+                    HttpContext.GetEndpoint(),
+                    HttpContext.Request.Method,
+                    unregisterRequest.Id);
+
+                return NotFound(erMsg);
+            }
+
+            // Unregister the device from the external service
+            bool success = await _deviceRegistryService.UnregisterDevice(device.Id);
+
+            //if(!success)
+            //{
+            //    return BadRequest($"Unable to remove device from iot hub");
+            //}
+            // Remove the device from the user's devices list
+            user.Devices.Remove(device);
+            _dbContext.Users.Update(user);
+
+            // Remove the device from the associated grouping
+
+            // Delete the device from the database
+            _dbContext.Devices.Remove(device);
+
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Device unregistered and deleted successfully");
         }
         [HttpGet]
         [Route("GetData")]
