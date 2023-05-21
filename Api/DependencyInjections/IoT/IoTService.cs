@@ -1,22 +1,25 @@
-﻿using Contracts.Devices;
+﻿using Api.DependencyInjections.Azure;
+using Contracts.Devices;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Devices;
 using Newtonsoft.Json;
 using System.Text;
 
 namespace Api.DependencyInjections.IoT
 {
-    public class IoTService
+    public class IoTService : IIotService
     {
         private const string _iotString = "https://naneticshub.azureiotcentral.com/api";
         private const byte apiVersion = 1;
 
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IKeyVaultRetriever _keyVaultRetriever;
 
-        public IoTService(IHttpClientFactory httpClientFactory)
+        public IoTService(IHttpClientFactory httpClientFactory, IKeyVaultRetriever keyVaultRetriever)
         {
             _httpClientFactory = httpClientFactory;
+            _keyVaultRetriever = keyVaultRetriever;
         }
-
         public async Task<HttpResponseMessage> CreateApiToken()
         {
             HttpClient client = _httpClientFactory.CreateClient();
@@ -32,11 +35,16 @@ namespace Api.DependencyInjections.IoT
 
             HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Put, endPoint);
             msg.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
+            msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(_keyVaultRetriever.RetrieveKey("IoTCentralApiToken").Value);
             HttpResponseMessage result = await client.SendAsync(msg);
             if(result.IsSuccessStatusCode)
             {
                 IoTAPITokenResponseDTO? response = await result.Content.ReadFromJsonAsync<IoTAPITokenResponseDTO>();
+            }
+            if (!result.IsSuccessStatusCode)
+            {
+                ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
+                string errorMsg = response.Message;
             }
             return result;
 
@@ -62,24 +70,41 @@ namespace Api.DependencyInjections.IoT
         //    return result;
 
         //}
+        private void AddApiAuthorization(HttpRequestMessage msg)
+        {
+            string value = _keyVaultRetriever.RetrieveKey("IoTCentralApiToken").Value;
+            msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(value);
 
-        public async Task<HttpResponseMessage> AddDevice(string deviceId)
+        }
+        public async Task<Device> AddDevice(string deviceHardWareId)
         {
             HttpClient client = _httpClientFactory.CreateClient();
-            string endPoint = _iotString + $"devices/{deviceId}?api-version={apiVersion}";
+            string endPoint = _iotString + $"devices/{deviceHardWareId}?api-version={apiVersion}";
 
             HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Put, endPoint);
-
+            AddApiAuthorization(msg);
             CreateDeviceRequestDTO createDeviceRequestDTO = new CreateDeviceRequestDTO()
             {
+                DisplayName = deviceHardWareId,
+                Enabled = false,
+                ETag = deviceHardWareId,
+                Simulated = false,
+                Template = string.Empty,
+
 
             };
-            string json = JsonConvert.SerializeObject(roleAssignments);
+            string json = JsonConvert.SerializeObject(createDeviceRequestDTO);
 
             msg.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage result = await client.SendAsync(msg);
-            return result;
+            if (!result.IsSuccessStatusCode)
+            {
+                ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
+                string errorMsg = response.Message;
+            }
+           Device d = await result.Content.ReadFromJsonAsync<Device>();
+            return d;
 
         }
 
@@ -89,6 +114,8 @@ namespace Api.DependencyInjections.IoT
             string endPoint = _iotString + $"devices/{deviceId}/credentials?api-version={apiVersion}";
 
             HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, endPoint);
+            AddApiAuthorization(msg);
+
             HttpResponseMessage result = await client.SendAsync(msg);
             return result;
 
@@ -100,11 +127,32 @@ namespace Api.DependencyInjections.IoT
             string endPoint = _iotString + $"devices/{deviceId}?api-version={apiVersion}";
 
             HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, endPoint);
+            AddApiAuthorization(msg);
+
             HttpResponseMessage result = await client.SendAsync(msg);
             return result;
 
         }
+        public async Task<bool> DeleteDevice(string deviceId)
+        {
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient();
+                string endPoint = _iotString + $"devices/{deviceId}?api-version={apiVersion}";
 
+                HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Delete, endPoint);
+                AddApiAuthorization(msg);
+
+                HttpResponseMessage result = await client.SendAsync(msg);
+                return result.IsSuccessStatusCode;
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+           
+
+        }
         public async Task<HttpResponseMessage> QueryDevice(string deviceId)
         {
             HttpClient client = _httpClientFactory.CreateClient();

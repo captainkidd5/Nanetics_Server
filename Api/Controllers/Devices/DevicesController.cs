@@ -1,4 +1,5 @@
 ﻿using Api.DependencyInjections.Authentication;
+using Api.DependencyInjections.IoT;
 using AutoMapper;
 using Contracts.Authentication.Identity.Create;
 using Contracts.Devices;
@@ -40,17 +41,18 @@ namespace Api.Controllers.Devices
         private readonly ILogger<Device> _logger;
         private readonly IAuthManager _authManager;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IDeviceRegistryService _deviceRegistryService;
+        private readonly IIotService _iotService;
         private const string _iotString = "https://naneticshub.azureiotcentral.com/";
 
-        public DevicesController(AppDbContext dbContext, IMapper mapper, ILogger<Device> logger, IAuthManager authManager, UserManager<ApplicationUser> userManager, IDeviceRegistryService deviceRegistryService)
+        public DevicesController(AppDbContext dbContext, IMapper mapper, ILogger<Device> logger, IAuthManager authManager,
+            UserManager<ApplicationUser> userManager, IIotService iotService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             _logger = logger;
             _authManager = authManager;
             _userManager = userManager;
-            _deviceRegistryService = deviceRegistryService;
+            _iotService = iotService;
         }
         [HttpPost]
         [Route("ping")]
@@ -117,7 +119,7 @@ namespace Api.Controllers.Devices
                 return BadRequest(erMsg);
             }
 
-            Microsoft.Azure.Devices.Device device = await _deviceRegistryService.CreateAndRegisterDevice(registryRequest);
+            Microsoft.Azure.Devices.Device device = await _iotService.AddDevice(Guid.NewGuid().ToString());
             DeviceRegistryResponse response = new DeviceRegistryResponse()
             {
                 AssignedId = device.Id,
@@ -316,7 +318,7 @@ namespace Api.Controllers.Devices
             }
 
             // Unregister the device from the external service
-            bool success = await _deviceRegistryService.UnregisterDevice(device.Id);
+            bool success = await _iotService.DeleteDevice(device.Id.ToString());
 
             //if(!success)
             //{

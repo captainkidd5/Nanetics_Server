@@ -31,4 +31,10 @@ namespace Contracts.Devices
         public string Template { get; set; }
         public string[] Type { get; set; }
     }
+
+    public class ErrorDetails
+    {
+        public string Code { get; set; }
+        public string Message { get; set; }
+    }
 }
