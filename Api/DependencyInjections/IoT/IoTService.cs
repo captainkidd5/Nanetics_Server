@@ -9,7 +9,7 @@ namespace Api.DependencyInjections.IoT
 {
     public class IoTService : IIotService
     {
-        private const string _iotString = "https://naneticshub.azureiotcentral.com/api";
+        private const string _iotString = "https://naneticshub.azureiotcentral.com/api/";
         private const byte apiVersion = 1;
 
         private readonly IHttpClientFactory _httpClientFactory;
@@ -72,39 +72,63 @@ namespace Api.DependencyInjections.IoT
         //}
         private void AddApiAuthorization(HttpRequestMessage msg)
         {
-            string value = _keyVaultRetriever.RetrieveKey("IoTCentralApiToken").Value;
-            msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(value);
+            try
+            {
+                string value = _keyVaultRetriever.RetrieveKey("IoTCentralApiToken").Value;
+                value = value.Split("SharedAccessSignature ")[1];
+                msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("SharedAccessSignature", value);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("test");
+            }
+            
 
         }
         public async Task<Device> AddDevice(string deviceHardWareId)
         {
-            HttpClient client = _httpClientFactory.CreateClient();
-            string endPoint = _iotString + $"devices/{deviceHardWareId}?api-version={apiVersion}";
-
-            HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Put, endPoint);
-            AddApiAuthorization(msg);
-            CreateDeviceRequestDTO createDeviceRequestDTO = new CreateDeviceRequestDTO()
+            try
             {
-                DisplayName = deviceHardWareId,
-                Enabled = false,
-                ETag = deviceHardWareId,
-                Simulated = false,
-                Template = string.Empty,
+                HttpClient client = _httpClientFactory.CreateClient();
+                string endPoint = _iotString + $"devices/{deviceHardWareId}?api-version=2022-10-31-preview";
+
+                HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Put, endPoint);
+                AddApiAuthorization(msg);
+                CreateDeviceRequestDTO createDeviceRequestDTO = new CreateDeviceRequestDTO()
+                {
+                    DisplayName = deviceHardWareId,
+                    Enabled = false,
+                    ETag = deviceHardWareId,
+                    Simulated = false,
+                    Template = string.Empty,
 
 
-            };
-            string json = JsonConvert.SerializeObject(createDeviceRequestDTO);
+                };
+                string json = JsonConvert.SerializeObject(createDeviceRequestDTO);
 
-            msg.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                msg.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage result = await client.SendAsync(msg);
-            if (!result.IsSuccessStatusCode)
-            {
-                ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
-                string errorMsg = response.Message;
+                HttpResponseMessage result = await client.SendAsync(msg);
+                if (!result.IsSuccessStatusCode)
+                {
+                    ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
+                    string errorMsg = response.Message;
+                }
+                //IoTDeviceDTO iotDevice = await result.Content.ReadFromJsonAsync<IoTDeviceDTO>();
+                string responseContent = await result.Content.ReadAsStringAsync();
+
+                object iotDevice = await result.Content.ReadFromJsonAsync<object>();
+
+                Device d = new Device();
+                return d;
             }
-           Device d = await result.Content.ReadFromJsonAsync<Device>();
-            return d;
+            catch(Exception e)
+            {
+                int num = 1;
+                return null;
+            }
+          
 
         }
 

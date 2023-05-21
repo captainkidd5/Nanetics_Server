@@ -86,7 +86,6 @@ try
     builder.Services.AddScoped<IKeyVaultRetriever, KeyVaultRetriever>();
     builder.Services.AddTransient<IEmailSender, EmailSender>();
     builder.Services.AddTransient<IS3Helper, S3Helper>();
-    builder.Services.AddTransient<IDeviceRegistryService, DeviceRegistryService>();
     builder.Services.AddTransient<IIotService, IoTService>();
 
 

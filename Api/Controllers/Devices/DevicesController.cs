@@ -120,6 +120,8 @@ namespace Api.Controllers.Devices
             }
 
             Microsoft.Azure.Devices.Device device = await _iotService.AddDevice(Guid.NewGuid().ToString());
+            if (device == null)
+                return BadRequest();
             DeviceRegistryResponse response = new DeviceRegistryResponse()
             {
                 AssignedId = device.Id,
