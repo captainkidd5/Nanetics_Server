@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Devices;
+﻿using Contracts.Devices.IoT;
+using Microsoft.Azure.Devices;
 
 namespace Api.DependencyInjections.IoT
 {
@@ -6,7 +7,7 @@ namespace Api.DependencyInjections.IoT
     {
         public  Task<HttpResponseMessage> CreateApiToken();
 
-        public  Task<Device> AddDevice(string deviceHardWareId);
+        public  Task<IoTDeviceDTO> AddDevice(string deviceHardWareId);
 
         public  Task<HttpResponseMessage> GetDeviceCredentials(string deviceId);
 

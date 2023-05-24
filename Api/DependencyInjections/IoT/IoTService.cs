@@ -95,7 +95,7 @@ namespace Api.DependencyInjections.IoT
        
 
         /// <summary>
-        /// Creates a new device group with the user's id as the group id. This should be done once whenever a user is created
+        /// Creates a new device group with the user's id as the group id (max 1000, probably just do this on the portal)
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>

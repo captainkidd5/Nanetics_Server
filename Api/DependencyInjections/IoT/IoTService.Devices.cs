@@ -7,7 +7,7 @@ namespace Api.DependencyInjections.IoT
 {
     public partial class IoTService : IIotService
     {
-        public async Task<Device> AddDevice(string deviceHardWareId)
+        public async Task<IoTDeviceDTO> AddDevice(string deviceHardWareId)
         {
             try
             {
@@ -42,7 +42,7 @@ namespace Api.DependencyInjections.IoT
 
                 //object iotDevice = await result.Content.ReadFromJsonAsync<object>();
 
-                return d;
+                return iotDevice;
             }
             catch (Exception e)
             {
