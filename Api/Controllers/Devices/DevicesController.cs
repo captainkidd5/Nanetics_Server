@@ -3,6 +3,7 @@ using Api.DependencyInjections.IoT;
 using AutoMapper;
 using Contracts.Authentication.Identity.Create;
 using Contracts.Devices;
+using Contracts.Devices.IoT;
 using Contracts.GroupingStuff;
 using DatabaseServices;
 using Microsoft.AspNetCore.Authorization;
@@ -119,24 +120,24 @@ namespace Api.Controllers.Devices
                 return BadRequest(erMsg);
             }
 
-            Microsoft.Azure.Devices.Device device = await _iotService.AddDevice(Guid.NewGuid().ToString());
+            IoTDeviceDTO device = await _iotService.AddDevice(Guid.NewGuid().ToString());
             if (device == null)
                 return BadRequest();
             DeviceRegistryResponse response = new DeviceRegistryResponse()
             {
-                AssignedId = device.Id,
-                X509Thumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint
+                AssignedId = device.id,
+                //X509Thumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint
             };
 
 
             Models.Devices.Device modelDevice = new Models.Devices.Device()
             {
-                Id = device.Id,
+                Id = device.id,
                 //GroupingId = "888d2c00-661e-490f-847e-734d6805029d",
                 HardwareId = registryRequest.DeviceHardWareId,
-                X509PrimaryThumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint,
+               // X509PrimaryThumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint,
                 GenerationId = 1,
-                ETag = device.ETag,
+                ETag = device.eTag,
                 ConnectionState = DeviceConnectionState.Disconnected,
                 Status = DeviceStatus.Disabled,
                 CloudToDeviceMessageCount = 1,
@@ -260,6 +261,11 @@ namespace Api.Controllers.Devices
             if (device == null)
                 return NotFound();
 
+            if(!await _iotService.UpdateDevice(device.Id, new UpdateIoTDeviceRequest() { displayName = deviceUpdateRequest.Nickname }))
+            {
+                return BadRequest("Unable to update device on IoT Central");
+            }
+
             //Remove device from its original grouping if a request was made to change it
             if (device.Grouping != null && device.Grouping.Id != deviceUpdateRequest.Id)
             {
@@ -337,7 +343,7 @@ namespace Api.Controllers.Devices
 
             await _dbContext.SaveChangesAsync();
 
-            return Ok("Device unregistered and deleted successfully");
+            return Ok( new { msg = "Device unregistered and deleted successfully" });
         }
         [HttpGet]
         [Route("GetData")]

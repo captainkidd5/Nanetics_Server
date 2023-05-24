@@ -23,19 +23,19 @@ namespace Contracts.Devices.IoT
 
     public class CreateDeviceRequestDTO
     {
-        public string DisplayName { get; set; }
-        public bool Enabled { get; set; }
-        public string ETag { get; set; }
-        public string[] Organizations { get; set; }
-        public bool Simulated { get; set; }
-        public string Template { get; set; }
-        public string[] Type { get; set; }
+        public string displayName { get; set; }
+        public bool enabled { get; set; }
+        public string etag { get; set; }
+        public string[] organizations { get; set; }
+        public bool simulated { get; set; }
+        public string template { get; set; }
+        public string[] type { get; set; }
     }
 
     public class ErrorDetails
     {
-        public string Code { get; set; }
-        public string Message { get; set; }
+        public string code { get; set; }
+        public string message { get; set; }
     }
 
 

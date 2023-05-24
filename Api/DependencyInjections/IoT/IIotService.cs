@@ -7,7 +7,7 @@ namespace Api.DependencyInjections.IoT
     {
         public  Task<HttpResponseMessage> CreateApiToken();
 
-        public  Task<IoTDeviceDTO> AddDevice(string deviceHardWareId);
+        public  Task<IoTDeviceDTO> AddDevice(string deviceId);
 
         public  Task<HttpResponseMessage> GetDeviceCredentials(string deviceId);
 
@@ -15,5 +15,7 @@ namespace Api.DependencyInjections.IoT
 
         public Task<HttpResponseMessage> QueryDevice(string deviceId);
         public Task<bool> DeleteDevice(string deviceId);
+
+        public Task<bool> UpdateDevice(string deviceId, UpdateIoTDeviceRequest updateRequest);
     }
 }

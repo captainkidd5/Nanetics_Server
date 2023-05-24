@@ -50,7 +50,7 @@ namespace Api.DependencyInjections.IoT
             if (!result.IsSuccessStatusCode)
             {
                 ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
-                string errorMsg = response.Message;
+                string errorMsg = response.message;
             }
             return result;
 

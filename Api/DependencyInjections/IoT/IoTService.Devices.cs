@@ -1,52 +1,59 @@
 ﻿using Contracts.Devices.IoT;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace Api.DependencyInjections.IoT
 {
     public partial class IoTService : IIotService
     {
-        public async Task<IoTDeviceDTO> AddDevice(string deviceHardWareId)
+        public async Task<IoTDeviceDTO> AddDevice(string deviceId)
         {
             try
             {
                 HttpClient client = _httpClientFactory.CreateClient();
-                string endPoint = _iotString + $"devices/{deviceHardWareId}?api-version={apiVersion}";
+                string endPoint = _iotString + $"devices/{deviceId}?api-version={apiVersion}";
 
                 HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Put, endPoint);
                 AddApiAuthorization(msg);
                 CreateDeviceRequestDTO createDeviceRequestDTO = new CreateDeviceRequestDTO()
                 {
-                    DisplayName = deviceHardWareId,
-                    Enabled = false,
-                    ETag = deviceHardWareId,
-                    Simulated = false,
-                    Template = string.Empty,
-
+                    displayName = deviceId,
+                    template = "dtmi:naneticshub:soil_sensorv2;1",
+                    simulated = false,
+                    enabled = false,
+                    organizations =new string[] {}
 
                 };
-                string json = JsonConvert.SerializeObject(createDeviceRequestDTO);
+                string json = JsonConvert.SerializeObject(new
+                {
+                    displayName = deviceId,
+                    template = "dtmi:Espressif:SensorController;2",
+                   // organizations = new string[] {"Tech" },
+
+                });
 
                 msg.Content = new StringContent(json, Encoding.UTF8, "application/json");
+              //  msg.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 HttpResponseMessage result = await client.SendAsync(msg);
                 if (!result.IsSuccessStatusCode)
                 {
                     ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
-                    string errorMsg = response.Message;
+
+                    string errorMsg = response.message;
+                    return null;
+
                 }
 
-                    IoTDeviceDTO iotDevice = await result.Content.ReadFromJsonAsync<IoTDeviceDTO>();
-                //string responseContent = await result.Content.ReadAsStringAsync();
-
-                //object iotDevice = await result.Content.ReadFromJsonAsync<object>();
+                dynamic d = await result.Content.ReadFromJsonAsync<dynamic>();
+                IoTDeviceDTO iotDevice = await result.Content.ReadFromJsonAsync<IoTDeviceDTO>();
 
                 return iotDevice;
             }
             catch (Exception e)
             {
-                int num = 1;
                 return null;
             }
 
@@ -113,6 +120,45 @@ namespace Api.DependencyInjections.IoT
             HttpResponseMessage result = await client.SendAsync(msg);
             return result;
 
+        }
+        public async Task<bool> UpdateDevice(string deviceId, UpdateIoTDeviceRequest updateRequest)
+        {
+            try
+            {
+                HttpClient client = _httpClientFactory.CreateClient();
+                string endPoint = _iotString + $"devices/{deviceId}?api-version={apiVersion}";
+
+                HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Patch, endPoint);
+                AddApiAuthorization(msg);
+     
+                //This is the same as UpdateIoTDeviceRequest, just typing it out for the help example
+                string json = JsonConvert.SerializeObject(new {
+                    displayName = updateRequest.displayName,
+                   template = "dtmi:naneticshub:soil_sensorv2;1",
+                    simulated = false,
+                    enabled = true
+                
+                });
+
+                msg.Content = new StringContent(json, Encoding.UTF8, "application/json");
+              //  msg.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                HttpResponseMessage result = await client.SendAsync(msg);
+                if (!result.IsSuccessStatusCode)
+                {
+                    ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
+                    string errorMsg = response.message;
+                    return false;
+                }
+
+                IoTDeviceDTO iotDevice = await result.Content.ReadFromJsonAsync<IoTDeviceDTO>();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
         }
     }
 }
