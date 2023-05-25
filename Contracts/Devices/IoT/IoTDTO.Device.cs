@@ -35,5 +35,10 @@ namespace Contracts.Devices.IoT
         public string displayName { get; set; }
     }
 
+    public class DeviceCollection
+    {
+        public string nextLink { get; set; }
+        public  IoTDeviceDTO value { get; set; }
+    }
 
 }

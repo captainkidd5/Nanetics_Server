@@ -17,37 +17,27 @@ namespace Api.DependencyInjections.IoT
 
                 HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Put, endPoint);
                 AddApiAuthorization(msg);
-                CreateDeviceRequestDTO createDeviceRequestDTO = new CreateDeviceRequestDTO()
-                {
-                    displayName = deviceId,
-                    template = "dtmi:naneticshub:soil_sensorv2;1",
-                    simulated = false,
-                    enabled = false,
-                    organizations =new string[] {}
-
-                };
+        
                 string json = JsonConvert.SerializeObject(new
                 {
                     displayName = deviceId,
-                    template = "dtmi:Espressif:SensorController;2",
-                   // organizations = new string[] {"Tech" },
+                    template = "dtmi:modelDefinition:naneticshub:soil_sensorv2;1",
+                    simulated = true
 
                 });
 
                 msg.Content = new StringContent(json, Encoding.UTF8, "application/json");
-              //  msg.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                 HttpResponseMessage result = await client.SendAsync(msg);
                 if (!result.IsSuccessStatusCode)
                 {
-                    ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
+                    IoTResponseError? response = await result.Content.ReadFromJsonAsync<IoTResponseError>();
 
-                    string errorMsg = response.message;
+                    string errorMsg = response.error.message;
                     return null;
 
                 }
 
-                dynamic d = await result.Content.ReadFromJsonAsync<dynamic>();
                 IoTDeviceDTO iotDevice = await result.Content.ReadFromJsonAsync<IoTDeviceDTO>();
 
                 return iotDevice;
@@ -159,6 +149,29 @@ namespace Api.DependencyInjections.IoT
             {
                 return false;
             }
+        }
+
+        public async Task<HttpResponseMessage> GetAllDevices()
+        {
+            HttpClient client = _httpClientFactory.CreateClient();
+            string endPoint = _iotString + $"devices?api-version={apiVersion}";
+
+            HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, endPoint);
+            AddApiAuthorization(msg);
+
+            HttpResponseMessage result = await client.SendAsync(msg);
+
+            if (!result.IsSuccessStatusCode)
+            {
+                ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
+                string errorMsg = response.message;
+                return null;
+            }
+
+             dynamic d= await result.Content.ReadFromJsonAsync<dynamic>();
+
+            return result;
+
         }
     }
 }

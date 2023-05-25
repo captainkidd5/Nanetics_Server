@@ -17,5 +17,9 @@ namespace Api.DependencyInjections.IoT
         public Task<bool> DeleteDevice(string deviceId);
 
         public Task<bool> UpdateDevice(string deviceId, UpdateIoTDeviceRequest updateRequest);
+
+        public Task<HttpResponseMessage> GetTemplates();
+
+        public Task<HttpResponseMessage> GetAllDevices();
     }
 }

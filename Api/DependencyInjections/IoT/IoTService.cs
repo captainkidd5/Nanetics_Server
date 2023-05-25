@@ -43,7 +43,7 @@ namespace Api.DependencyInjections.IoT
             msg.Content = new StringContent(json, Encoding.UTF8, "application/json");
             msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(_keyVaultRetriever.RetrieveKey("IoTCentralApiToken").Value);
             HttpResponseMessage result = await client.SendAsync(msg);
-            if(result.IsSuccessStatusCode)
+            if (result.IsSuccessStatusCode)
             {
                 IoTAPITokenResponseDTO? response = await result.Content.ReadFromJsonAsync<IoTAPITokenResponseDTO>();
             }
@@ -89,10 +89,10 @@ namespace Api.DependencyInjections.IoT
             {
                 Console.WriteLine("test");
             }
-            
+
 
         }
-       
+
 
         /// <summary>
         /// Creates a new device group with the user's id as the group id (max 1000, probably just do this on the portal)
@@ -126,6 +126,49 @@ namespace Api.DependencyInjections.IoT
             }
 
         }
-       
+
+
+        public async Task<HttpResponseMessage> GetTemplates()
+        {
+            HttpClient client = _httpClientFactory.CreateClient();
+            string endPoint = _iotString + $"deviceTemplates?api-version={apiVersion}";
+
+            HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, endPoint);
+            AddApiAuthorization(msg);
+
+            HttpResponseMessage result = await client.SendAsync(msg);
+            if (!result.IsSuccessStatusCode)
+            {
+                IoTResponseError? response = await result.Content.ReadFromJsonAsync<IoTResponseError>();
+
+                string errorMsg = response.error.message;
+                return null;
+
+            }
+
+            DeviceTemplateCollection iotDevice = await result.Content.ReadFromJsonAsync<DeviceTemplateCollection>();
+            //dynamic iotDevice = await result.Content.ReadFromJsonAsync<dynamic>();
+
+            return result;
+
+        }
+
+        public class DeviceTemplateCollection
+        {
+
+            public string nextLink { get; set; }
+            public DeviceTemplate[] value { get; set; }
+        }
+
+        public class DeviceTemplate
+        {
+            public string id { get; set; }
+            public string[] type { get; set; }
+            public object capabilityModel { get; set; }
+            public string description { get; set; }
+            public string displayName { get; set; }
+            public string etag { get; set; }
+        }
+
     }
 }

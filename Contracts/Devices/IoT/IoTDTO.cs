@@ -32,10 +32,17 @@ namespace Contracts.Devices.IoT
         public string[] type { get; set; }
     }
 
+    public class IoTResponseError
+    {
+        public ErrorDetails error { get; set; }
+    }
+
     public class ErrorDetails
     {
         public string code { get; set; }
         public string message { get; set; }
+        public string requestId { get; set; }
+        public string time { get; set; }
     }
 
 

@@ -343,15 +343,31 @@ namespace Api.Controllers.Devices
 
             await _dbContext.SaveChangesAsync();
 
-            return Ok( new { msg = "Device unregistered and deleted successfully" });
+            return Ok( new { Message = "Device unregistered and deleted successfully" });
         }
+
+        //Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IndhaWlraXBvbW1AZ21haWwuY29tIiwibmFtZWlkIjoiZGE5ZTI5OGEtMTE4Zi00YTE3LWEyOGUtNDRlOWU1N2NlMjBiIiwidW5pcXVlX25hbWUiOiJ3YWlpa2lwb21tQGdtYWlsLmNvbSIsInJvbGUiOlsiVXNlciIsIkFkbWluIl0sIm5iZiI6MTY4NTAzNjIyOSwiZXhwIjoxNjg1NjQxMDI5LCJpYXQiOjE2ODUwMzYyMjksImlzcyI6IkFwaSJ9.MH4H17hJzDYETMRfVMQxv8XgrASYjwuuSqaWjNcKjTc
         [HttpGet]
         [Route("GetData")]
         public async Task<IActionResult> GetData()
         {
             return Ok(new { Message = "test" });
         }
+        [HttpGet]
+        [Route("GetTemplates")]
+        public async Task<IActionResult> GetTemplates()
+        {
 
+            var result = await _iotService.GetTemplates();
+            return Ok(new { Message = "test" });
+        }
+        [HttpGet]
+        [Route("GetIoTDevices")]
+        public async Task<IActionResult> GetIotDevices()
+        {
 
+            var result = await _iotService.GetAllDevices();
+            return Ok(new { Message = "test" });
+        }
     }
 }
