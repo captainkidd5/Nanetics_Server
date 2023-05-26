@@ -153,6 +153,7 @@ namespace Api.DependencyInjections.IoT
 
         }
 
+  
         public class DeviceTemplateCollection
         {
 

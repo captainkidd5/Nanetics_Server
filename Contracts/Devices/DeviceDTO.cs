@@ -19,7 +19,7 @@ namespace Contracts.Devices
         public string Id { get; set; } = string.Empty;
         public string Nickname { get; set; } = string.Empty;
 
-        public ulong HardwareId { get; set; }
+        public string HardwareId { get; set; }
         public string X509PrimaryThumbprint { get; set; } = string.Empty;
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Contracts.Devices
 
     public class DeviceRegistryRequest
     {
-        public ulong DeviceHardWareId { get; set; }
+        public string DeviceHardWareId { get; set; }
     }
 
     public class DeviceRegistryResponse

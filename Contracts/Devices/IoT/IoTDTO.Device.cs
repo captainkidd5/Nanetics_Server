@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,10 +36,30 @@ namespace Contracts.Devices.IoT
         public string displayName { get; set; }
     }
 
-    public class DeviceCollection
+
+
+    public class IoTDeviceCollectionDTO
     {
-        public string nextLink { get; set; }
-        public  IoTDeviceDTO value { get; set; }
+        public string nextLink { get; set;}
+        public IoTDeviceDTO[] value { get; set; }
     }
+
+
+    public class SoilSensorProperties
+    {
+        public IoTDeviceInformation deviceInformation { get; set; }
+    }
+
+    public class IoTDeviceInformation
+    {
+        public string model { get; set; }
+        public string swVersion{ get; set; }
+        public double totalStorage{ get; set; }
+        public double totalMemory { get; set; }
+        public string user { get; set; }
+        public string hardwareId { get; set; }
+
+    }
+
 
 }

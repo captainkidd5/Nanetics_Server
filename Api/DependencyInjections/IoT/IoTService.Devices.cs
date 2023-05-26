@@ -22,7 +22,8 @@ namespace Api.DependencyInjections.IoT
                 {
                     displayName = deviceId,
                     template = "dtmi:modelDefinition:naneticshub:soil_sensorv2;1",
-                    simulated = true
+                    simulated = false,
+                    enabled =true
 
                 });
 
@@ -120,14 +121,15 @@ namespace Api.DependencyInjections.IoT
 
                 HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Patch, endPoint);
                 AddApiAuthorization(msg);
-     
+
                 //This is the same as UpdateIoTDeviceRequest, just typing it out for the help example
-                string json = JsonConvert.SerializeObject(new {
-                    displayName = updateRequest.displayName,
-                   template = "dtmi:naneticshub:soil_sensorv2;1",
+                string json = JsonConvert.SerializeObject(new
+                {
+                    displayName = deviceId,
+                    template = "dtmi:modelDefinition:naneticshub:soil_sensorv2;1",
                     simulated = false,
                     enabled = true
-                
+
                 });
 
                 msg.Content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -151,7 +153,7 @@ namespace Api.DependencyInjections.IoT
             }
         }
 
-        public async Task<HttpResponseMessage> GetAllDevices()
+        public async Task<IoTDeviceCollectionDTO> GetAllDevices()
         {
             HttpClient client = _httpClientFactory.CreateClient();
             string endPoint = _iotString + $"devices?api-version={apiVersion}";
@@ -167,10 +169,19 @@ namespace Api.DependencyInjections.IoT
                 string errorMsg = response.message;
                 return null;
             }
+            try
+            {
+                IoTDeviceCollectionDTO d = await result.Content.ReadFromJsonAsync<IoTDeviceCollectionDTO>();
+                await Console.Out.WriteLineAsync( "test");
+                return d;
 
-             dynamic d= await result.Content.ReadFromJsonAsync<dynamic>();
+            }
+            catch (Exception e)
+            {
+                string excep = e.ToString();
+            }
 
-            return result;
+            return null;
 
         }
     }

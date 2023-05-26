@@ -20,6 +20,10 @@ namespace Api.DependencyInjections.IoT
 
         public Task<HttpResponseMessage> GetTemplates();
 
-        public Task<HttpResponseMessage> GetAllDevices();
+        public Task<IoTDeviceCollectionDTO> GetAllDevices();
+
+        public Task<IotCollection> GetDeviceComponents(string deviceId);
+
+        public Task<SoilSensorProperties> GetDeviceProperties(string deviceId);
     }
 }

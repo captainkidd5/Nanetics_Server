@@ -77,7 +77,7 @@ namespace Api.Controllers.Devices
 
         [HttpGet]
         [Route("isRegistered")]
-        public async Task<IActionResult> IsRegistered([FromQuery] ulong hardwareId)
+        public async Task<IActionResult> IsRegistered([FromQuery] string hardwareId)
         {
             ApplicationUser user = await _authManager.VerifyAccessTokenAndReturnuser(Request, User);
             if (user == null)
@@ -145,7 +145,6 @@ namespace Api.Controllers.Devices
 
 
             };
-            //eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IndhaWlraXBvbW1AZ21haWwuY29tIiwibmFtZWlkIjoiZGE5ZTI5OGEtMTE4Zi00YTE3LWEyOGUtNDRlOWU1N2NlMjBiIiwidW5pcXVlX25hbWUiOiJ3YWlpa2lwb21tQGdtYWlsLmNvbSIsInJvbGUiOlsiVXNlciIsIkFkbWluIl0sIm5iZiI6MTY4NDM1NjY3NiwiZXhwIjoxNjg0OTYxNDc2LCJpYXQiOjE2ODQzNTY2NzYsImlzcyI6IkFwaSJ9.UbnkC_lv6f9QrFCrdRyEymmPg9j5uy3CpcjoynBXuik
 
 
                         Grouping baseGrouping = user.Groupings.FirstOrDefault(x => x.IsBaseGrouping);
@@ -347,27 +346,7 @@ namespace Api.Controllers.Devices
         }
 
         //Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IndhaWlraXBvbW1AZ21haWwuY29tIiwibmFtZWlkIjoiZGE5ZTI5OGEtMTE4Zi00YTE3LWEyOGUtNDRlOWU1N2NlMjBiIiwidW5pcXVlX25hbWUiOiJ3YWlpa2lwb21tQGdtYWlsLmNvbSIsInJvbGUiOlsiVXNlciIsIkFkbWluIl0sIm5iZiI6MTY4NTAzNjIyOSwiZXhwIjoxNjg1NjQxMDI5LCJpYXQiOjE2ODUwMzYyMjksImlzcyI6IkFwaSJ9.MH4H17hJzDYETMRfVMQxv8XgrASYjwuuSqaWjNcKjTc
-        [HttpGet]
-        [Route("GetData")]
-        public async Task<IActionResult> GetData()
-        {
-            return Ok(new { Message = "test" });
-        }
-        [HttpGet]
-        [Route("GetTemplates")]
-        public async Task<IActionResult> GetTemplates()
-        {
 
-            var result = await _iotService.GetTemplates();
-            return Ok(new { Message = "test" });
-        }
-        [HttpGet]
-        [Route("GetIoTDevices")]
-        public async Task<IActionResult> GetIotDevices()
-        {
-
-            var result = await _iotService.GetAllDevices();
-            return Ok(new { Message = "test" });
-        }
+       
     }
 }

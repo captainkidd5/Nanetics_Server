@@ -20,7 +20,7 @@ namespace Models.Devices
         public string Id { get; set; } = string.Empty;
 
         public string Nickname { get; set; } = string.Empty;
-        public ulong HardwareId { get; set; }
+        public string HardwareId { get; set; }
         public string X509PrimaryThumbprint { get; set; } = string.Empty;
         /// <summary>
         /// Basically the version, used for firmware updates
