@@ -8,7 +8,7 @@ namespace Api.DependencyInjections.IoT
 {
     public partial class IoTService : IIotService
     {
-        public async Task<IoTDeviceDTO> AddDevice(string deviceId)
+        public async Task<IoTDeviceDTO> AddIoTDevice(string deviceId)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace Api.DependencyInjections.IoT
 
         }
 
-        public async Task<HttpResponseMessage> GetDeviceCredentials(string deviceId)
+        public async Task<DeviceCredentials> GetIoTDeviceCredentials(string deviceId)
         {
             HttpClient client = _httpClientFactory.CreateClient();
             string endPoint = _iotString + $"devices/{deviceId}/credentials?api-version={apiVersion}";
@@ -65,11 +65,11 @@ namespace Api.DependencyInjections.IoT
             string responseContent = await result.Content.ReadAsStringAsync();
 
             DeviceCredentials credentials = await result.Content.ReadFromJsonAsync<DeviceCredentials>();
-            return result;
+            return credentials;
 
         }
 
-        public async Task<HttpResponseMessage> GetDevice(string deviceId)
+        public async Task<HttpResponseMessage> GetIoTDevice(string deviceId)
         {
             HttpClient client = _httpClientFactory.CreateClient();
             string endPoint = _iotString + $"devices/{deviceId}?api-version={apiVersion}";
@@ -81,7 +81,7 @@ namespace Api.DependencyInjections.IoT
             return result;
 
         }
-        public async Task<bool> DeleteDevice(string deviceId)
+        public async Task<bool> DeleteIoTDevice(string deviceId)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace Api.DependencyInjections.IoT
 
 
         }
-        public async Task<HttpResponseMessage> QueryDevice(string deviceId)
+        public async Task<HttpResponseMessage> QueryIoTDevice(string deviceId)
         {
             HttpClient client = _httpClientFactory.CreateClient();
             string endPoint = _iotString + $"query?api-version={apiVersion}";
@@ -112,7 +112,7 @@ namespace Api.DependencyInjections.IoT
             return result;
 
         }
-        public async Task<bool> UpdateDevice(string deviceId, UpdateIoTDeviceRequest updateRequest)
+        public async Task<bool> UpdateIoTDevise(string deviceId, UpdateIoTDeviceRequest updateRequest)
         {
             try
             {
@@ -125,7 +125,7 @@ namespace Api.DependencyInjections.IoT
                 //This is the same as UpdateIoTDeviceRequest, just typing it out for the help example
                 string json = JsonConvert.SerializeObject(new
                 {
-                    displayName = deviceId,
+                    displayName = updateRequest.displayName,
                     template = "dtmi:modelDefinition:naneticshub:soil_sensorv2;1",
                     simulated = false,
                     enabled = true
@@ -153,7 +153,7 @@ namespace Api.DependencyInjections.IoT
             }
         }
 
-        public async Task<IoTDeviceCollectionDTO> GetAllDevices()
+        public async Task<IoTDeviceCollectionDTO> GetAllIoTDevices()
         {
             HttpClient client = _httpClientFactory.CreateClient();
             string endPoint = _iotString + $"devices?api-version={apiVersion}";

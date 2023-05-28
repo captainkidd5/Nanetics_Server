@@ -60,6 +60,9 @@ namespace Contracts.Devices.IoT
         public string hardwareId { get; set; }
 
     }
-
+    public class SoilSensorModuleUpdateProperties
+    {
+        public IoTDeviceInformation body { get; set; }
+    }
 
 }

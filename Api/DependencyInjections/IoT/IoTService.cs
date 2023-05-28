@@ -26,7 +26,7 @@ namespace Api.DependencyInjections.IoT
             _httpClientFactory = httpClientFactory;
             _keyVaultRetriever = keyVaultRetriever;
         }
-        public async Task<HttpResponseMessage> CreateApiToken()
+        public async Task<HttpResponseMessage> CreateIoTApiToken()
         {
             HttpClient client = _httpClientFactory.CreateClient();
             string tokenId = Guid.NewGuid().ToString();
@@ -128,7 +128,7 @@ namespace Api.DependencyInjections.IoT
         }
 
 
-        public async Task<HttpResponseMessage> GetTemplates()
+        public async Task<HttpResponseMessage> GetIoTTemplates()
         {
             HttpClient client = _httpClientFactory.CreateClient();
             string endPoint = _iotString + $"deviceTemplates?api-version={apiVersion}";

@@ -1,29 +1,34 @@
 ﻿using Contracts.Devices.IoT;
+using Contracts.Devices.IoT.Telemetry;
 using Microsoft.Azure.Devices;
 
 namespace Api.DependencyInjections.IoT
 {
     public interface IIotService
     {
-        public  Task<HttpResponseMessage> CreateApiToken();
+        public  Task<HttpResponseMessage> CreateIoTApiToken();
 
-        public  Task<IoTDeviceDTO> AddDevice(string deviceId);
+        public  Task<IoTDeviceDTO> AddIoTDevice(string deviceId);
 
-        public  Task<HttpResponseMessage> GetDeviceCredentials(string deviceId);
+        public  Task<DeviceCredentials> GetIoTDeviceCredentials(string deviceId);
 
-        public  Task<HttpResponseMessage> GetDevice(string deviceId);
+        public  Task<HttpResponseMessage> GetIoTDevice(string deviceId);
 
-        public Task<HttpResponseMessage> QueryDevice(string deviceId);
-        public Task<bool> DeleteDevice(string deviceId);
+        public Task<HttpResponseMessage> QueryIoTDevice(string deviceId);
+        public Task<bool> DeleteIoTDevice(string deviceId);
 
-        public Task<bool> UpdateDevice(string deviceId, UpdateIoTDeviceRequest updateRequest);
+        public Task<bool> UpdateIoTDevise(string deviceId, UpdateIoTDeviceRequest updateRequest);
 
-        public Task<HttpResponseMessage> GetTemplates();
+        public Task<HttpResponseMessage> GetIoTTemplates();
 
-        public Task<IoTDeviceCollectionDTO> GetAllDevices();
+        public Task<IoTDeviceCollectionDTO> GetAllIoTDevices();
 
-        public Task<IotCollection> GetDeviceComponents(string deviceId);
+        public Task<IotCollection> GetIoTDeviceComponents(string deviceId);
+        public Task<object> GetIoTDeviceComponentProperties(string deviceId, string componentName);
+        public Task<SoilSensorProperties> GetIoTDeviceProperties(string deviceId);
 
-        public Task<SoilSensorProperties> GetDeviceProperties(string deviceId);
+        public Task<SoilSensorProperties> UpdateIoTComponentProperties(string deviceId, SoilSensorProperties soilSensorProperties);
+
+        public Task<IoTTelemetry> GetTelemetryForDevice(string deviceId, string telemetryName);
     }
 }

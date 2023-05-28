@@ -86,7 +86,12 @@ namespace Api.Controllers.Devices
             Device d = await _dbContext.Devices.FirstOrDefaultAsync(x => x.HardwareId == hardwareId);
             bool isRegistered = d != null;
 
-            return Ok(new { IsRegistered = isRegistered });
+            DeviceCredentials credentials = new DeviceCredentials();
+            if (isRegistered)
+            {
+                credentials = await _iotService.GetIoTDeviceCredentials(d.Id);
+            }
+            return Ok(new { IsRegistered = isRegistered, AssignedId = d != null ? d.Id : string.Empty, PrimaryKey = credentials.SymmetricKey.PrimaryKey, IdScope = credentials.IdScope  });
 
         }
 
@@ -120,7 +125,7 @@ namespace Api.Controllers.Devices
                 return BadRequest(erMsg);
             }
 
-            IoTDeviceDTO device = await _iotService.AddDevice(Guid.NewGuid().ToString());
+            IoTDeviceDTO device = await _iotService.AddIoTDevice(Guid.NewGuid().ToString());
             if (device == null)
                 return BadRequest();
             DeviceRegistryResponse response = new DeviceRegistryResponse()
@@ -260,7 +265,7 @@ namespace Api.Controllers.Devices
             if (device == null)
                 return NotFound();
 
-            if(!await _iotService.UpdateDevice(device.Id, new UpdateIoTDeviceRequest() { displayName = deviceUpdateRequest.Nickname }))
+            if(!await _iotService.UpdateIoTDevise(device.Id, new UpdateIoTDeviceRequest() { displayName = deviceUpdateRequest.Nickname }))
             {
                 return BadRequest("Unable to update device on IoT Central");
             }
@@ -325,7 +330,7 @@ namespace Api.Controllers.Devices
             }
 
             // Unregister the device from the external service
-            bool success = await _iotService.DeleteDevice(device.Id.ToString());
+            bool success = await _iotService.DeleteIoTDevice(device.Id.ToString());
 
             //if(!success)
             //{
