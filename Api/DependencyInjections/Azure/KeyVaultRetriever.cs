@@ -6,20 +6,21 @@ namespace Api.DependencyInjections.Azure
     public class KeyVaultRetriever : IKeyVaultRetriever
     {
         private readonly IConfiguration _configuration;
-
+        private readonly SecretClient _secretClient;
         public KeyVaultRetriever(IConfiguration configuration)
         {
             _configuration = configuration;
+            string keyVaultName = _configuration.GetSection("Azure").GetSection("KeyVaultName").Value;
+            string kvUri = "https://" + keyVaultName + ".vault.azure.net";
+
+            _secretClient = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
         }
         public KeyVaultSecret RetrieveKey(string val)
         {
             try
             {
-                string keyVaultName = _configuration.GetSection("Azure").GetSection("KeyVaultName").Value;
-                string kvUri = "https://" + keyVaultName + ".vault.azure.net";
-
-                SecretClient client = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
-                return client.GetSecret(val).Value;
+               
+                return _secretClient.GetSecret(val).Value;
             }
             catch(Exception e)
             {

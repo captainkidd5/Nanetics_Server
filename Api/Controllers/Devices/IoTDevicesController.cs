@@ -1,4 +1,5 @@
-﻿using Api.DependencyInjections.IoT;
+﻿using Api.DependencyInjections.Azure;
+using Api.DependencyInjections.IoT;
 using Contracts.Devices.IoT;
 using Contracts.Devices.IoT.Telemetry;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,8 @@ namespace Api.Controllers.Devices
         public IoTDevicesController(IIotService iotService)
         {
             _ioTService = iotService;
+
+
         }
         [HttpGet]
         [Route("GetIotTemplates")]

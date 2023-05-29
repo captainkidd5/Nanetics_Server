@@ -21,10 +21,13 @@ namespace Api.DependencyInjections.IoT
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IKeyVaultRetriever _keyVaultRetriever;
 
+        private readonly string _sasSignature;
         public IoTService(IHttpClientFactory httpClientFactory, IKeyVaultRetriever keyVaultRetriever)
         {
             _httpClientFactory = httpClientFactory;
             _keyVaultRetriever = keyVaultRetriever;
+            string value = _keyVaultRetriever.RetrieveKey("IoTCentralApiToken").Value;
+            _sasSignature = value.Split("SharedAccessSignature ")[1];
         }
         public async Task<HttpResponseMessage> CreateIoTApiToken()
         {
@@ -80,9 +83,7 @@ namespace Api.DependencyInjections.IoT
         {
             try
             {
-                string value = _keyVaultRetriever.RetrieveKey("IoTCentralApiToken").Value;
-                value = value.Split("SharedAccessSignature ")[1];
-                msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("SharedAccessSignature", value);
+                msg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("SharedAccessSignature", _sasSignature);
 
             }
             catch (Exception ex)
