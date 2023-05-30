@@ -30,5 +30,7 @@ namespace Api.DependencyInjections.IoT
         public Task<SoilSensorProperties> UpdateIoTComponentProperties(string deviceId, SoilSensorProperties soilSensorProperties);
 
         public Task<IoTTelemetry> GetTelemetryForDevice(string deviceId, string telemetryName);
+
+        public Task<Twin> GetTwin(string deviceId);
     }
 }

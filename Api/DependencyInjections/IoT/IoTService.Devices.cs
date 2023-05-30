@@ -184,5 +184,35 @@ namespace Api.DependencyInjections.IoT
             return null;
 
         }
+        public async Task<Twin> GetTwin(string deviceId)
+        {
+            HttpClient client = _httpClientFactory.CreateClient();
+            string endPoint = "https://naneticshub.azureiotcentral.com" + $"/system/iothub/devices/{deviceId}/get-twin?extendedInfo=true";
+
+            HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Get, endPoint);
+            AddApiAuthorization(msg);
+
+            HttpResponseMessage result = await client.SendAsync(msg);
+
+            if (!result.IsSuccessStatusCode)
+            {
+                ErrorDetails? response = await result.Content.ReadFromJsonAsync<ErrorDetails>();
+                string errorMsg = response.message;
+                return null;
+            }
+            try
+            {
+                Twin d = await result.Content.ReadFromJsonAsync<Twin>();
+                await Console.Out.WriteLineAsync("test");
+                return d;
+
+            }
+            catch (Exception e)
+            {
+                string excep = e.ToString();
+            }
+
+            return null;
+        }
     }
 }

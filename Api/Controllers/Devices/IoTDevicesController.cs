@@ -103,5 +103,17 @@ namespace Api.Controllers.Devices
                 return BadRequest();
             return Ok(result);
         }
+        //Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IndhaWlraXBvbW1AZ21haWwuY29tIiwibmFtZWlkIjoiZGE5ZTI5OGEtMTE4Zi00YTE3LWEyOGUtNDRlOWU1N2NlMjBiIiwidW5pcXVlX25hbWUiOiJ3YWlpa2lwb21tQGdtYWlsLmNvbSIsInJvbGUiOlsiVXNlciIsIkFkbWluIl0sIm5iZiI6MTY4NTQwNTc2OSwiZXhwIjoxNjg2MDEwNTY5LCJpYXQiOjE2ODU0MDU3NjksImlzcyI6IkFwaSJ9.2frKvRCJ7TyHVor9fZIvTEqPCJCMNKAsq2ZTU2bV5c8
+        [HttpGet]
+        [Route("GetIotDeviceTwin")]
+        public async Task<IActionResult> GetIotDeviceTwin([FromQuery] string deviceId)
+        {
+
+            Twin result = await _ioTService.GetTwin(deviceId);
+
+            if (result == null)
+                return BadRequest();
+            return Ok(result);
+        }
     }
 }

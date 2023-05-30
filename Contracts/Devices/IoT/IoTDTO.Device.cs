@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Azure.Devices;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -63,6 +64,19 @@ namespace Contracts.Devices.IoT
     public class SoilSensorModuleUpdateProperties
     {
         public IoTDeviceInformation body { get; set; }
+    }
+    public class Twin
+    {
+
+
+        public int cloudToDeviceMessageCount { get; set; }
+        public string connectionState { get; set; }
+        public string deviceEtag { get; set; }
+        public DateTime lastActivityTime { get; set; }
+        public string status { get; set; }
+        public DateTime statusUpdateTime { get; set; }
+        public int version { get; set; }
+        public string modelId { get; set; }
     }
 
 }
