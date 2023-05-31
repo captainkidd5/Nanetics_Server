@@ -32,7 +32,7 @@ namespace Api.DependencyInjections.IoT
 
         }
 
-        public async Task<SoilSensorProperties> GetIoTDeviceProperties(string deviceId)
+        public async Task<IoTTemplateProperties> GetIoTDeviceProperties(string deviceId)
         {
             HttpClient client = _httpClientFactory.CreateClient();
             string endPoint = _iotString + $"devices/{deviceId}/properties?api-version={apiVersion}";
@@ -49,7 +49,7 @@ namespace Api.DependencyInjections.IoT
                 return null;
             }
 
-            SoilSensorProperties d = await result.Content.ReadFromJsonAsync<SoilSensorProperties>();
+            IoTTemplateProperties d = await result.Content.ReadFromJsonAsync<IoTTemplateProperties>();
 
             return d;
 
@@ -84,7 +84,7 @@ namespace Api.DependencyInjections.IoT
         /// <param name="deviceId"></param>
         /// <param name="soilSensorProperties"></param>
         /// <returns></returns>
-        public async Task<SoilSensorProperties> UpdateIoTComponentProperties(string deviceId, SoilSensorProperties soilSensorProperties)
+        public async Task<IoTTemplateProperties> UpdateIoTComponentProperties(string deviceId, IoTTemplateProperties soilSensorProperties)
         {
             HttpClient client = _httpClientFactory.CreateClient();
             string endPoint = _iotString + $"devices/{deviceId}/components/deviceInformation/properties?api-version={apiVersion}";
@@ -92,7 +92,7 @@ namespace Api.DependencyInjections.IoT
             HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Patch, endPoint);
             AddApiAuthorization(msg);
 
-            SoilSensorModuleUpdateProperties soilSensorModuleUpdateProperties = new SoilSensorModuleUpdateProperties();
+            IoTTemplateModuleUpdateProperties soilSensorModuleUpdateProperties = new IoTTemplateModuleUpdateProperties();
             soilSensorModuleUpdateProperties.body = soilSensorProperties.deviceInformation;
             string json = JsonConvert.SerializeObject(soilSensorModuleUpdateProperties);
 
@@ -105,7 +105,7 @@ namespace Api.DependencyInjections.IoT
                 string errorMsg = response.message;
                 return null;
             }
-            SoilSensorProperties d = await result.Content.ReadFromJsonAsync<SoilSensorProperties>();
+            IoTTemplateProperties d = await result.Content.ReadFromJsonAsync<IoTTemplateProperties>();
 
             return d;
 

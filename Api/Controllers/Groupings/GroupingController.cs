@@ -93,6 +93,8 @@ namespace Api.Controllers.groupings
             grouping.User = user;
           //  grouping.UserId = user.Id;
             grouping.BannerImagePath = string.Empty;
+            if (string.IsNullOrEmpty(groupingRegistrationRequest.Description))
+                grouping.Description = "";
             user.Groupings.Add(grouping);
             await _userManager.UpdateAsync(user);
 

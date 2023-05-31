@@ -25,9 +25,9 @@ namespace Api.DependencyInjections.IoT
 
         public Task<IotCollection> GetIoTDeviceComponents(string deviceId);
         public Task<object> GetIoTDeviceComponentProperties(string deviceId, string componentName);
-        public Task<SoilSensorProperties> GetIoTDeviceProperties(string deviceId);
+        public Task<IoTTemplateProperties> GetIoTDeviceProperties(string deviceId);
 
-        public Task<SoilSensorProperties> UpdateIoTComponentProperties(string deviceId, SoilSensorProperties soilSensorProperties);
+        public Task<IoTTemplateProperties> UpdateIoTComponentProperties(string deviceId, IoTTemplateProperties soilSensorProperties);
 
         public Task<IoTTelemetry> GetTelemetryForDevice(string deviceId, string telemetryName);
 

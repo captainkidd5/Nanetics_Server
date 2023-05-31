@@ -21,7 +21,6 @@ namespace Models.Devices
 
         public string Nickname { get; set; } = string.Empty;
         public string HardwareId { get; set; }
-        public string X509PrimaryThumbprint { get; set; } = string.Empty;
         /// <summary>
         /// Basically the version, used for firmware updates
         /// </summary>

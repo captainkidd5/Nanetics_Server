@@ -131,16 +131,13 @@ namespace Api.Controllers.Devices
             DeviceRegistryResponse response = new DeviceRegistryResponse()
             {
                 AssignedId = device.id,
-                //X509Thumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint
             };
 
 
             Models.Devices.Device modelDevice = new Models.Devices.Device()
             {
                 Id = device.id,
-                //GroupingId = "888d2c00-661e-490f-847e-734d6805029d",
                 HardwareId = registryRequest.DeviceHardWareId,
-               // X509PrimaryThumbprint = device.Authentication.X509Thumbprint.PrimaryThumbprint,
                 GenerationId = 1,
                 ETag = device.eTag,
                 ConnectionState = DeviceConnectionState.Disconnected,

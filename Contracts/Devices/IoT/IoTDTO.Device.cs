@@ -46,7 +46,7 @@ namespace Contracts.Devices.IoT
     }
 
 
-    public class SoilSensorProperties
+    public class IoTTemplateProperties
     {
         public IoTDeviceInformation deviceInformation { get; set; }
     }
@@ -61,7 +61,7 @@ namespace Contracts.Devices.IoT
         public string hardwareId { get; set; }
 
     }
-    public class SoilSensorModuleUpdateProperties
+    public class IoTTemplateModuleUpdateProperties
     {
         public IoTDeviceInformation body { get; set; }
     }

@@ -60,7 +60,7 @@ namespace Api.Controllers.Devices
         public async Task<IActionResult> GetIoTDeviceProperties([FromQuery] string deviceId)
         {
 
-            SoilSensorProperties result = await _ioTService.GetIoTDeviceProperties(deviceId);
+            IoTTemplateProperties result = await _ioTService.GetIoTDeviceProperties(deviceId);
 
             if (result == null)
                 return BadRequest();
@@ -82,10 +82,10 @@ namespace Api.Controllers.Devices
         //Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IndhaWlraXBvbW1AZ21haWwuY29tIiwibmFtZWlkIjoiZGE5ZTI5OGEtMTE4Zi00YTE3LWEyOGUtNDRlOWU1N2NlMjBiIiwidW5pcXVlX25hbWUiOiJ3YWlpa2lwb21tQGdtYWlsLmNvbSIsInJvbGUiOlsiVXNlciIsIkFkbWluIl0sIm5iZiI6MTY4NTMxNTc4MiwiZXhwIjoxNjg1OTIwNTgyLCJpYXQiOjE2ODUzMTU3ODIsImlzcyI6IkFwaSJ9.BrlP1pQyi1uDdc29FLWxN7qO_JNZDlV41L-6aDvBbsc
         [HttpPatch]
         [Route("UpdateIoTComponentProperties")]
-        public async Task<IActionResult> UpdateIoTComponentProperties([FromQuery] string deviceId, [FromBody] SoilSensorProperties soilSensorProperties)
+        public async Task<IActionResult> UpdateIoTComponentProperties([FromQuery] string deviceId, [FromBody] IoTTemplateProperties soilSensorProperties)
         {
 
-            SoilSensorProperties result = await _ioTService.UpdateIoTComponentProperties(deviceId, soilSensorProperties);
+            IoTTemplateProperties result = await _ioTService.UpdateIoTComponentProperties(deviceId, soilSensorProperties);
 
             if (result == null)
                 return BadRequest();
