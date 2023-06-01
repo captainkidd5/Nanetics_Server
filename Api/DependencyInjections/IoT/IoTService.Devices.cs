@@ -8,7 +8,13 @@ namespace Api.DependencyInjections.IoT
 {
     public partial class IoTService : IIotService
     {
-        public async Task<IoTDeviceDTO> AddIoTDevice(string deviceId)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="deviceId"></param>
+        /// <param name="template">The literal name of the template on IoT Central e.x. soil_sensorv2</param>
+        /// <returns></returns>
+        public async Task<IoTDeviceDTO> AddIoTDevice(string deviceId, string template)
         {
             try
             {
@@ -17,11 +23,12 @@ namespace Api.DependencyInjections.IoT
 
                 HttpRequestMessage msg = new HttpRequestMessage(HttpMethod.Put, endPoint);
                 AddApiAuthorization(msg);
+                  //  template = $"dtmi:modelDefinition:naneticshub:soil_sensorv2;1",
         
                 string json = JsonConvert.SerializeObject(new
                 {
                     displayName = deviceId,
-                    template = "dtmi:modelDefinition:naneticshub:soil_sensorv2;1",
+                    template = $"dtmi:modelDefinition:naneticshub:{template};1",
                     simulated = false,
                     enabled =true
 

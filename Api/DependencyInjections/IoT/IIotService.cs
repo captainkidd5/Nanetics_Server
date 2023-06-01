@@ -8,7 +8,7 @@ namespace Api.DependencyInjections.IoT
     {
         public  Task<HttpResponseMessage> CreateIoTApiToken();
 
-        public  Task<IoTDeviceDTO> AddIoTDevice(string deviceId);
+        public  Task<IoTDeviceDTO> AddIoTDevice(string deviceId, string template);
 
         public  Task<DeviceCredentials> GetIoTDeviceCredentials(string deviceId);
 
@@ -32,5 +32,7 @@ namespace Api.DependencyInjections.IoT
         public Task<IoTTelemetry> GetTelemetryForDevice(string deviceId, string telemetryName);
 
         public Task<Twin> GetTwin(string deviceId);
+
+        public Task<IoTCommandDTO> SendIoTCommand(string deviceId, string commandName, string json = null);
     }
 }

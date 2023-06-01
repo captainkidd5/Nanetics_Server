@@ -91,7 +91,7 @@ namespace Api.Controllers.Devices
             {
                 credentials = await _iotService.GetIoTDeviceCredentials(d.Id);
             }
-            return Ok(new { IsRegistered = isRegistered, AssignedId = d != null ? d.Id : string.Empty, PrimaryKey = credentials.SymmetricKey.PrimaryKey, IdScope = credentials.IdScope  });
+            return Ok(new { IsRegistered = isRegistered, AssignedId = d != null ? d.Id : string.Empty, PrimaryKey = credentials?.SymmetricKey.PrimaryKey, IdScope = credentials?.IdScope  });
 
         }
 
@@ -125,7 +125,7 @@ namespace Api.Controllers.Devices
                 return BadRequest(erMsg);
             }
 
-            IoTDeviceDTO device = await _iotService.AddIoTDevice(Guid.NewGuid().ToString());
+            IoTDeviceDTO device = await _iotService.AddIoTDevice(Guid.NewGuid().ToString(), registryRequest.TemplateName);
             if (device == null)
                 return BadRequest();
             DeviceRegistryResponse response = new DeviceRegistryResponse()

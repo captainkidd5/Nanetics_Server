@@ -54,6 +54,7 @@ namespace Contracts.Devices
     public class DeviceRegistryRequest
     {
         public string DeviceHardWareId { get; set; }
+        public string TemplateName { get; set; }
     }
 
     public class DeviceRegistryResponse
